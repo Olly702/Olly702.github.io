@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,169 +14,475 @@
             padding: 0;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #0b0b12;
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                radial-gradient(circle at top, #202044 0%, #0b0b12 45%);
             color: white;
             min-height: 100vh;
         }
 
+        /* =========================
+           HEADER
+        ========================= */
+
         header {
-            padding: 25px 50px;
-            background: #11111c;
-            border-bottom: 2px solid #24243a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 20px 50px;
+
+            background: rgba(12, 12, 20, 0.9);
+            backdrop-filter: blur(12px);
+
+            border-bottom: 1px solid #29293d;
         }
 
-        header h1 {
-            font-size: 32px;
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 1px;
         }
 
-        header p {
-            color: #999;
-            margin-top: 6px;
+        nav {
+            display: flex;
+            gap: 25px;
         }
+
+        nav a {
+            color: #aaa;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        nav a:hover {
+            color: white;
+        }
+
+        /* =========================
+           HERO
+        ========================= */
 
         .hero {
+            min-height: 520px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
             text-align: center;
+
             padding: 80px 20px;
         }
 
-        .hero h2 {
-            font-size: 55px;
+        .hero-icon {
+            font-size: 75px;
+            margin-bottom: 20px;
+
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5));
+        }
+
+        .hero h1 {
+            font-size: clamp(45px, 8vw, 85px);
+            font-weight: 900;
+            letter-spacing: -3px;
+
             margin-bottom: 15px;
+        }
+
+        .hero h1 span {
+            color: #8f8fff;
         }
 
         .hero p {
             color: #aaa;
-            font-size: 18px;
+            font-size: 20px;
+            margin-bottom: 35px;
         }
+
+        .hero-button {
+            display: inline-block;
+
+            padding: 16px 32px;
+
+            border-radius: 10px;
+
+            background: white;
+            color: black;
+
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 17px;
+
+            transition: 0.2s;
+        }
+
+        .hero-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(255,255,255,0.15);
+        }
+
+        /* =========================
+           GAMES
+        ========================= */
 
         .games {
-            max-width: 1100px;
+            max-width: 1150px;
             margin: auto;
-            padding: 20px;
+
+            padding: 60px 25px;
         }
 
-        .games h2 {
-            font-size: 30px;
-            margin-bottom: 25px;
+        .section-title {
+            font-size: 36px;
+            margin-bottom: 30px;
         }
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(280px, 1fr));
+
+            gap: 25px;
         }
 
+        /* =========================
+           GAME CARD
+        ========================= */
+
         .game-card {
-            background: #151522;
-            border: 1px solid #29293d;
-            border-radius: 14px;
-            padding: 25px;
-            transition: 0.2s;
+            overflow: hidden;
+
+            background: rgba(22, 22, 35, 0.9);
+
+            border: 1px solid #303047;
+            border-radius: 18px;
+
+            transition:
+                transform 0.25s,
+                border-color 0.25s,
+                box-shadow 0.25s;
         }
 
         .game-card:hover {
-            transform: translateY(-5px);
-            border-color: #55557a;
+            transform: translateY(-8px);
+
+            border-color: #6666a0;
+
+            box-shadow:
+                0 20px 50px rgba(0,0,0,0.35);
         }
 
-        .game-icon {
-            font-size: 55px;
-            margin-bottom: 15px;
+        .game-banner {
+            height: 190px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 75px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #202040,
+                    #12121e
+                );
+
+            border-bottom: 1px solid #303047;
         }
 
-        .game-card h3 {
-            font-size: 24px;
+        .game-info {
+            padding: 25px;
+        }
+
+        .game-info h3 {
+            font-size: 25px;
             margin-bottom: 10px;
         }
 
-        .game-card p {
+        .game-info p {
             color: #999;
             line-height: 1.5;
-            margin-bottom: 20px;
+
+            margin-bottom: 22px;
         }
 
         .play-button {
             display: inline-block;
+
+            padding: 12px 22px;
+
+            border-radius: 8px;
+
             background: white;
             color: black;
+
             text-decoration: none;
-            padding: 12px 22px;
-            border-radius: 8px;
-            font-weight: bold;
+
+            font-weight: 900;
+
+            transition: 0.2s;
         }
 
         .play-button:hover {
             background: #ddd;
+            transform: translateY(-2px);
         }
 
-        footer {
+        .coming-soon {
+            background: #29293a;
+            color: #888;
+
+            cursor: default;
+        }
+
+        .coming-soon:hover {
+            background: #29293a;
+            transform: none;
+        }
+
+        /* =========================
+           ABOUT
+        ========================= */
+
+        .about {
+            max-width: 900px;
+            margin: auto;
+
+            padding: 80px 25px;
+
             text-align: center;
+        }
+
+        .about h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .about p {
+            color: #999;
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            margin-top: 50px;
+
+            padding: 40px 20px;
+
+            text-align: center;
+
+            border-top: 1px solid #222235;
+
             color: #666;
-            padding: 60px 20px 30px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 650px) {
+
+            header {
+                padding: 18px 20px;
+            }
+
+            nav {
+                gap: 12px;
+            }
+
+            nav a {
+                font-size: 13px;
+            }
+
+            .hero {
+                min-height: 450px;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+
+            .hero p {
+                font-size: 17px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<header>
-    <h1>🎮 EPIC MASTER GAMES</h1>
-    <p>Games made by Epic Master Guy</p>
-</header>
+    <!-- =========================
+         HEADER
+    ========================= -->
 
-<section class="hero">
-    <h2>PLAY MY GAMES</h2>
-    <p>Small games. Big fun.</p>
-</section>
+    <header>
 
-<section class="games">
+        <div class="logo">
+            🎮 EPIC MASTER GAMES
+        </div>
 
-    <h2>Featured Games</h2>
+        <nav>
+            <a href="#games">Games</a>
+            <a href="#about">About</a>
+        </nav>
 
-    <div class="game-grid">
+    </header>
 
-        <div class="game-card">
 
-            <div class="game-icon">🔱🎈</div>
+    <!-- =========================
+         HERO
+    ========================= -->
 
-            <h3>Harpoons 'n Balloons!</h3>
+    <section class="hero">
 
-            <p>
-                A fast-paced arcade game where you
-                pop bouncing balloons with your harpoon!
-            </p>
+        <div class="hero-icon">
+            🎮
+        </div>
 
-            <a class="play-button" href="#">
-                PLAY NOW
-            </a>
+        <h1>
+            EPIC MASTER <span>GAMES</span>
+        </h1>
+
+        <p>
+            Small games. Big fun.
+        </p>
+
+        <a class="hero-button" href="#games">
+            EXPLORE GAMES
+        </a>
+
+    </section>
+
+
+    <!-- =========================
+         GAMES
+    ========================= -->
+
+    <section class="games" id="games">
+
+        <h2 class="section-title">
+            Featured Games
+        </h2>
+
+
+        <div class="game-grid">
+
+
+            <!-- HARPOONS 'N BALLOONS -->
+
+            <div class="game-card">
+
+                <div class="game-banner">
+                    🔱🎈
+                </div>
+
+                <div class="game-info">
+
+                    <h3>
+                        Harpoons 'n Balloons!
+                    </h3>
+
+                    <p>
+                        A fast-paced arcade game where
+                        you pop bouncing balloons with your
+                        harpoon and chase the highest score.
+                    </p>
+
+                    <!-- THIS CONNECTS TO THE GAME -->
+
+                    <a
+                        class="play-button"
+                        href="games/harpoons-n-balloons/"
+                    >
+                        PLAY NOW
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- MORE GAMES -->
+
+            <div class="game-card">
+
+                <div class="game-banner">
+                    🎮
+                </div>
+
+                <div class="game-info">
+
+                    <h3>
+                        More Games
+                    </h3>
+
+                    <p>
+                        More games are currently being
+                        created. Check back soon!
+                    </p>
+
+                    <span class="play-button coming-soon">
+                        COMING SOON
+                    </span>
+
+                </div>
+
+            </div>
+
 
         </div>
 
-        <div class="game-card">
+    </section>
 
-            <div class="game-icon">🎮</div>
 
-            <h3>More Games</h3>
+    <!-- =========================
+         ABOUT
+    ========================= -->
 
-            <p>
-                More games are coming soon...
-            </p>
+    <section class="about" id="about">
 
-            <a class="play-button" href="#">
-                COMING SOON
-            </a>
+        <h2>
+            About Epic Master Games
+        </h2>
 
-        </div>
+        <p>
+            Epic Master Games is a collection of
+            original games created for the web.
+            From quick arcade games to bigger
+            projects, this is where they all live.
+        </p>
 
-    </div>
+    </section>
 
-</section>
 
-<footer>
-    © 2026 Epic Master Games
-</footer>
+    <!-- =========================
+         FOOTER
+    ========================= -->
+
+    <footer>
+
+        © 2026 Epic Master Games
+
+    </footer>
 
 </body>
 </html>
+```
