@@ -1,1 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Epic Master Games</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #0b0b12;
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 25px 50px;
+            background: #11111c;
+            border-bottom: 2px solid #24243a;
+        }
+
+        header h1 {
+            font-size: 32px;
+        }
+
+        header p {
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .hero h2 {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            color: #aaa;
+            font-size: 18px;
+        }
+
+        .games {
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .games h2 {
+            font-size: 30px;
+            margin-bottom: 25px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: #151522;
+            border: 1px solid #29293d;
+            border-radius: 14px;
+            padding: 25px;
+            transition: 0.2s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: #55557a;
+        }
+
+        .game-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .game-card h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .game-card p {
+            color: #999;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .play-button {
+            display: inline-block;
+            background: white;
+            color: black;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .play-button:hover {
+            background: #ddd;
+        }
+
+        footer {
+            text-align: center;
+            color: #666;
+            padding: 60px 20px 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎮 EPIC MASTER GAMES</h1>
+    <p>Games made by Epic Master Guy</p>
+</header>
+
+<section class="hero">
+    <h2>PLAY MY GAMES</h2>
+    <p>Small games. Big fun.</p>
+</section>
+
+<section class="games">
+
+    <h2>Featured Games</h2>
+
+    <div class="game-grid">
+
+        <div class="game-card">
+
+            <div class="game-icon">🔱🎈</div>
+
+            <h3>Harpoons 'n Balloons!</h3>
+
+            <p>
+                A fast-paced arcade game where you
+                pop bouncing balloons with your harpoon!
+            </p>
+
+            <a class="play-button" href="#">
+                PLAY NOW
+            </a>
+
+        </div>
+
+        <div class="game-card">
+
+            <div class="game-icon">🎮</div>
+
+            <h3>More Games</h3>
+
+            <p>
+                More games are coming soon...
+            </p>
+
+            <a class="play-button" href="#">
+                COMING SOON
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+    © 2026 Epic Master Games
+</footer>
+
+</body>
+</html>
