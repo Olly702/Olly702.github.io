@@ -1,0 +1,4687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harpoons 'n Balloons!</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #050713;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#gameWrapper {
+    position: relative;
+    width: min(100vw, 1100px);
+    height: min(100vh, 760px);
+    aspect-ratio: 16 / 10;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #10152c;
+    border-radius: 12px;
+    box-shadow:
+        0 0 40px rgba(0,0,0,.7),
+        0 0 100px rgba(40,100,255,.12);
+}
+
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    color: white;
+    pointer-events: none;
+    text-shadow: 0 2px 5px #000;
+}
+
+.hudBox {
+    min-width: 150px;
+}
+
+.hudTitle {
+    font-size: 12px;
+    font-weight: bold;
+    opacity: .65;
+    letter-spacing: 2px;
+}
+
+.hudValue {
+    font-size: 25px;
+    font-weight: 900;
+}
+
+#centerHud {
+    text-align: center;
+}
+
+#rightHud {
+    text-align: right;
+}
+
+/* COMBO HUD */
+#comboHud {
+    position: absolute;
+    top: 82px;
+    left: 50%;
+    transform: translateX(-50%) scale(.75);
+    min-width: 190px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity .35s ease,
+        transform .18s cubic-bezier(.2,1.6,.3,1);
+    z-index: 5;
+}
+
+#comboHud.visible {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+#comboHud.punch {
+    transform: translateX(-50%) scale(1.18);
+}
+
+.comboMultiplier {
+    font-size: 38px;
+    font-weight: 1000;
+    line-height: 1;
+    letter-spacing: -2px;
+    background: linear-gradient(
+        90deg,
+        #65eaff,
+        #7c8cff,
+        #ff65d4,
+        #ffe66b
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 12px rgba(90,220,255,.65));
+}
+
+.comboLabel {
+    margin-top: 3px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,.75);
+}
+
+.comboTimer {
+    width: 150px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255,255,255,.12);
+}
+
+.comboTimerFill {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        #65eaff,
+        #7c8cff,
+        #ff65d4
+    );
+    transform-origin: left center;
+}
+
+#overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2,4,12,.72);
+    backdrop-filter: blur(5px);
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}
+
+.panel {
+    width: min(520px, 90%);
+    padding: 42px;
+    border-radius: 20px;
+    background:
+        linear-gradient(145deg, rgba(27,35,75,.96), rgba(8,12,31,.97));
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 20px 80px rgba(0,0,0,.6);
+}
+
+.logo {
+    font-size: clamp(38px, 7vw, 70px);
+    font-weight: 1000;
+    letter-spacing: -4px;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg,#67e8ff,#7c8cff,#ff65d4);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.subtitle {
+    opacity: .7;
+    margin-bottom: 30px;
+}
+
+button {
+    border: none;
+    color: white;
+    font-weight: 900;
+    font-size: 18px;
+    padding: 15px 34px;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(135deg,#5468ff,#a342ff);
+    box-shadow: 0 8px 25px rgba(80,90,255,.35);
+    transition: transform .12s, filter .12s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.15);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+.controls {
+    margin-top: 24px;
+    line-height: 1.8;
+    font-size: 13px;
+    opacity: .65;
+}
+
+#mobileControls {
+    display: none;
+}
+
+@media (max-width: 700px) {
+
+    #hud {
+        padding: 0 12px;
+    }
+
+    .hudBox {
+        min-width: 90px;
+    }
+
+    .hudValue {
+        font-size: 18px;
+    }
+
+    #comboHud {
+        top: 78px;
+    }
+
+    .comboMultiplier {
+        font-size: 30px;
+    }
+
+    .comboTimer {
+        width: 120px;
+    }
+
+    #mobileControls {
+        display: flex;
+        position: absolute;
+        bottom: 18px;
+        left: 18px;
+        right: 18px;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+
+    .mobileGroup {
+        display: flex;
+        gap: 10px;
+        pointer-events: auto;
+    }
+
+    .mobileButton {
+        width: 62px;
+        height: 62px;
+        padding: 0;
+        border-radius: 50%;
+        background: rgba(20,30,70,.8);
+        border: 1px solid rgba(255,255,255,.2);
+        font-size: 24px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="gameWrapper">
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+
+    <div class="hudBox">
+        <div class="hudTitle">SCORE</div>
+        <div class="hudValue" id="score">000000</div>
+    </div>
+
+    <div class="hudBox" id="centerHud">
+        <div class="hudTitle">LEVEL</div>
+        <div class="hudValue" id="level">1</div>
+    </div>
+
+    <div class="hudBox" id="rightHud">
+        <div class="hudTitle">LIVES</div>
+        <div class="hudValue" id="lives">♥ ♥ ♥</div>
+    </div>
+
+</div>
+
+<div id="comboHud">
+
+    <div class="comboMultiplier" id="comboMultiplier">
+        x2
+    </div>
+
+    <div class="comboLabel">
+        COMBO
+    </div>
+
+    <div class="comboTimer">
+        <div
+            class="comboTimerFill"
+            id="comboTimerFill"
+        ></div>
+    </div>
+
+</div>
+
+<div id="mobileControls">
+
+    <div class="mobileGroup">
+        <button class="mobileButton" id="leftBtn">◀</button>
+        <button class="mobileButton" id="rightBtn">▶</button>
+    </div>
+
+    <div class="mobileGroup">
+        <button class="mobileButton" id="fireBtn">↑</button>
+    </div>
+
+</div>
+
+<div id="overlay">
+
+    <div class="panel">
+
+        <div class="logo">
+            Harpoons 'n Balloons!
+        </div>
+
+        <div class="subtitle">
+            A classic arcade-style bubble survival game
+        </div>
+
+        <button id="startButton">
+            START GAME
+        </button>
+
+        <div class="controls">
+            <b>A / D</b> or <b>← / →</b> — Move<br>
+            <b>SPACE</b> — Fire harpoon<br>
+            <b>P</b> — Pause
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+"use strict";
+
+/* CANVAS */
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const W = 1100;
+const H = 760;
+
+canvas.width = W;
+canvas.height = H;
+
+/* UI */
+const scoreElement =
+    document.getElementById("score");
+
+const levelElement =
+    document.getElementById("level");
+
+const livesElement =
+    document.getElementById("lives");
+
+const overlay =
+    document.getElementById("overlay");
+
+const startButton =
+    document.getElementById("startButton");
+
+const comboHud =
+    document.getElementById("comboHud");
+
+const comboMultiplierElement =
+    document.getElementById("comboMultiplier");
+
+const comboTimerFill =
+    document.getElementById("comboTimerFill");
+
+/* GAME STATE */
+let gameState = "menu";
+
+let score = 0;
+let level = 1;
+let lives = 3;
+
+const MAX_LIVES = 9;
+
+let cameraShake = 0;
+let levelTransition = 0;
+
+let particles = [];
+let floatingTexts = [];
+let bubbles = [];
+let harpoons = [];
+let lifePickups = [];
+let stars = [];
+
+let popBursts = [];
+let popShockwaves = [];
+let popRings = [];
+let popFlashes = [];
+
+let keys = {};
+
+let lastTime =
+    performance.now();
+
+/* COMBO */
+let comboCount = 0;
+let comboTimer = 0;
+
+const COMBO_TIMEOUT = 5000;
+
+function resetCombo(immediate = false) {
+
+    comboCount = 0;
+    comboTimer = 0;
+
+    if (immediate) {
+
+        comboHud.classList.remove(
+            "visible"
+        );
+
+        comboHud.classList.remove(
+            "punch"
+        );
+
+        comboTimerFill.style.transform =
+            "scaleX(1)";
+
+    }
+
+}
+
+function startComboFade() {
+
+    comboTimer = 0;
+
+    comboHud.classList.remove(
+        "visible"
+    );
+
+    setTimeout(() => {
+
+        if (comboTimer <= 0) {
+
+            comboCount = 0;
+
+        }
+
+    }, 400);
+
+}
+
+function addCombo() {
+
+    comboCount++;
+
+    comboTimer =
+        COMBO_TIMEOUT;
+
+    if (comboCount >= 2) {
+
+        comboMultiplierElement.textContent =
+            "x" + comboCount;
+
+        comboHud.classList.add(
+            "visible"
+        );
+
+        comboHud.classList.remove(
+            "punch"
+        );
+
+        void comboHud.offsetWidth;
+
+        comboHud.classList.add(
+            "punch"
+        );
+
+        setTimeout(() => {
+
+            comboHud.classList.remove(
+                "punch"
+            );
+
+        }, 180);
+
+    }
+
+    updateComboHUD();
+
+}
+
+function updateComboHUD() {
+
+    if (comboCount < 2) {
+
+        comboHud.classList.remove(
+            "visible"
+        );
+
+        comboTimerFill.style.transform =
+            "scaleX(1)";
+
+        return;
+
+    }
+
+    comboMultiplierElement.textContent =
+        "x" + comboCount;
+
+    const progress =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                comboTimer /
+                COMBO_TIMEOUT
+            )
+        );
+
+    comboTimerFill.style.transform =
+        `scaleX(${progress})`;
+
+}
+
+/* WORLD */
+const FLOOR = H - 54;
+const CEILING = 86;
+
+/* PLAYER */
+const player = {
+
+    x: W / 2,
+
+    y:
+        FLOOR - 48,
+
+    width: 30,
+
+    height: 48,
+
+    velocityX: 0,
+
+    acceleration: 0.8,
+
+    maxSpeed: 8,
+
+    friction: 0.78,
+
+    fireCooldown: 0,
+
+    invulnerable: 0,
+
+    facing: 1
+
+};
+
+/* STARS */
+for (let i = 0; i < 120; i++) {
+
+    stars.push({
+
+        x:
+            Math.random() * W,
+
+        y:
+            CEILING +
+            Math.random() *
+            (FLOOR - CEILING),
+
+        radius:
+            Math.random() *
+            1.6 +
+            .2,
+
+        alpha:
+            Math.random() *
+            .7 +
+            .2,
+
+        twinkle:
+            Math.random() * 5
+
+    });
+
+}
+
+/* INPUT */
+window.addEventListener(
+    "keydown",
+    e => {
+
+        keys[
+            e.key.toLowerCase()
+        ] = true;
+
+        if (
+            [
+                "arrowleft",
+                "arrowright",
+                " ",
+                "a",
+                "d"
+            ].includes(
+                e.key.toLowerCase()
+            )
+        ) {
+
+            e.preventDefault();
+
+        }
+
+        if (
+            e.key.toLowerCase() === "p"
+        ) {
+
+            togglePause();
+
+        }
+
+        if (e.code === "Space") {
+
+            fireHarpoon();
+
+        }
+
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    e => {
+
+        keys[
+            e.key.toLowerCase()
+        ] = false;
+
+    }
+);
+
+/* MOBILE */
+function holdButton(
+    button,
+    key
+) {
+
+    button.addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+            keys[key] = true;
+
+        }
+    );
+
+    button.addEventListener(
+        "pointerup",
+        e => {
+
+            e.preventDefault();
+
+            keys[key] = false;
+
+        }
+    );
+
+    button.addEventListener(
+        "pointerleave",
+        () => {
+
+            keys[key] = false;
+
+        }
+    );
+
+}
+
+holdButton(
+    document.getElementById(
+        "leftBtn"
+    ),
+    "arrowleft"
+);
+
+holdButton(
+    document.getElementById(
+        "rightBtn"
+    ),
+    "arrowright"
+);
+
+document
+    .getElementById("fireBtn")
+    .addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+            fireHarpoon();
+
+        }
+    );
+
+/* AUDIO */
+let audioContext = null;
+
+function initAudio() {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+    }
+
+    if (
+        audioContext.state ===
+        "suspended"
+    ) {
+
+        audioContext.resume();
+
+    }
+
+}
+
+function sound(type) {
+
+    if (!audioContext)
+        return;
+
+    const osc =
+        audioContext
+        .createOscillator();
+
+    const gain =
+        audioContext
+        .createGain();
+
+    osc.connect(gain);
+
+    gain.connect(
+        audioContext.destination
+    );
+
+    const now =
+        audioContext.currentTime;
+
+    if (type === "fire") {
+
+        osc.type = "square";
+
+        osc.frequency.setValueAtTime(
+            520,
+            now
+        );
+
+        osc.frequency
+            .exponentialRampToValueAtTime(
+                880,
+                now + .08
+            );
+
+        gain.gain.setValueAtTime(
+            .08,
+            now
+        );
+
+        gain.gain
+            .exponentialRampToValueAtTime(
+                .001,
+                now + .09
+            );
+
+        osc.start(now);
+        osc.stop(now + .09);
+
+    }
+
+    if (type === "pop") {
+
+        osc.type = "triangle";
+
+        osc.frequency.setValueAtTime(
+            350,
+            now
+        );
+
+        osc.frequency
+            .exponentialRampToValueAtTime(
+                90,
+                now + .13
+            );
+
+        gain.gain.setValueAtTime(
+            .12,
+            now
+        );
+
+        gain.gain
+            .exponentialRampToValueAtTime(
+                .001,
+                now + .13
+            );
+
+        osc.start(now);
+        osc.stop(now + .13);
+
+    }
+
+    if (type === "bounce") {
+
+        osc.type = "sine";
+
+        osc.frequency.setValueAtTime(
+            180,
+            now
+        );
+
+        osc.frequency
+            .exponentialRampToValueAtTime(
+                280,
+                now + .04
+            );
+
+        gain.gain.setValueAtTime(
+            .035,
+            now
+        );
+
+        gain.gain
+            .exponentialRampToValueAtTime(
+                .001,
+                now + .05
+            );
+
+        osc.start(now);
+        osc.stop(now + .05);
+
+    }
+
+    if (type === "hurt") {
+
+        osc.type = "sawtooth";
+
+        osc.frequency.setValueAtTime(
+            160,
+            now
+        );
+
+        osc.frequency
+            .exponentialRampToValueAtTime(
+                60,
+                now + .3
+            );
+
+        gain.gain.setValueAtTime(
+            .12,
+            now
+        );
+
+        gain.gain
+            .exponentialRampToValueAtTime(
+                .001,
+                now + .3
+            );
+
+        osc.start(now);
+        osc.stop(now + .3);
+
+    }
+
+    if (type === "life") {
+
+        osc.type = "sine";
+
+        osc.frequency.setValueAtTime(
+            500,
+            now
+        );
+
+        osc.frequency.setValueAtTime(
+            700,
+            now + .08
+        );
+
+        osc.frequency.setValueAtTime(
+            1000,
+            now + .16
+        );
+
+        gain.gain.setValueAtTime(
+            .1,
+            now
+        );
+
+        gain.gain
+            .exponentialRampToValueAtTime(
+                .001,
+                now + .35
+            );
+
+        osc.start(now);
+        osc.stop(now + .35);
+
+    }
+
+    if (type === "bonus") {
+
+        osc.type = "square";
+
+        osc.frequency.setValueAtTime(
+            650,
+            now
+        );
+
+        osc.frequency.setValueAtTime(
+            850,
+            now + .08
+        );
+
+        osc.frequency.setValueAtTime(
+            1100,
+            now + .16
+        );
+
+        osc.frequency.setValueAtTime(
+            1400,
+            now + .24
+        );
+
+        gain.gain.setValueAtTime(
+            .08,
+            now
+        );
+
+        gain.gain
+            .exponentialRampToValueAtTime(
+                .001,
+                now + .4
+            );
+
+        osc.start(now);
+        osc.stop(now + .4);
+
+    }
+
+    if (type === "level") {
+
+        osc.type = "square";
+
+        osc.frequency.setValueAtTime(
+            440,
+            now
+        );
+
+        osc.frequency.setValueAtTime(
+            660,
+            now + .12
+        );
+
+        osc.frequency.setValueAtTime(
+            880,
+            now + .24
+        );
+
+        gain.gain.setValueAtTime(
+            .08,
+            now
+        );
+
+        gain.gain
+            .exponentialRampToValueAtTime(
+                .001,
+                now + .4
+            );
+
+        osc.start(now);
+        osc.stop(now + .4);
+
+    }
+
+}
+
+/* BUBBLE */
+class Bubble {
+
+    constructor(
+        x,
+        y,
+        size
+    ) {
+
+        this.x = x;
+        this.y = y;
+        this.size = size;
+
+        const radii = [
+            78,
+            52,
+            34,
+            21
+        ];
+
+        this.radius =
+            radii[size];
+
+        const speeds = [
+            2.5,
+            3.0,
+            3.8,
+            4.8
+        ];
+
+        this.velocityX =
+            (
+                Math.random() < .5
+                    ? -1
+                    : 1
+            ) *
+            speeds[size];
+
+        this.velocityY =
+            -5 -
+            Math.random() * 2;
+
+        this.phase =
+            Math.random() *
+            Math.PI * 2;
+
+        this.hue =
+            185 +
+            Math.random() * 80;
+
+        this.alive = true;
+
+    }
+
+    update(dt) {
+
+        this.x +=
+            this.velocityX * dt;
+
+        this.y +=
+            this.velocityY * dt;
+
+        this.velocityY +=
+            .24 * dt;
+
+        if (
+            this.x -
+            this.radius <= 8
+        ) {
+
+            this.x =
+                8 +
+                this.radius;
+
+            this.velocityX =
+                Math.abs(
+                    this.velocityX
+                );
+
+            sound("bounce");
+
+        }
+
+        if (
+            this.x +
+            this.radius >=
+            W - 8
+        ) {
+
+            this.x =
+                W -
+                8 -
+                this.radius;
+
+            this.velocityX =
+                -Math.abs(
+                    this.velocityX
+                );
+
+            sound("bounce");
+
+        }
+
+        if (
+            this.y -
+            this.radius <=
+            CEILING
+        ) {
+
+            this.y =
+                CEILING +
+                this.radius;
+
+            this.velocityY =
+                Math.abs(
+                    this.velocityY
+                );
+
+        }
+
+        if (
+            this.y +
+            this.radius >=
+            FLOOR
+        ) {
+
+            this.y =
+                FLOOR -
+                this.radius;
+
+            this.velocityY =
+                -Math.abs(
+                    this.velocityY
+                ) * .94;
+
+            sound("bounce");
+
+        }
+
+    }
+
+    draw() {
+
+        const pulse =
+            Math.sin(
+                performance.now() *
+                .004 +
+                this.phase
+            ) * 1.5;
+
+        const r =
+            this.radius +
+            pulse;
+
+        ctx.save();
+
+        ctx.shadowBlur = 25;
+
+        ctx.shadowColor =
+            `hsla(
+                ${this.hue},
+                100%,
+                65%,
+                .45
+            )`;
+
+        const gradient =
+            ctx.createRadialGradient(
+                this.x-r*.35,
+                this.y-r*.4,
+                r*.05,
+                this.x,
+                this.y,
+                r
+            );
+
+        gradient.addColorStop(
+            0,
+            `hsla(
+                ${this.hue},
+                100%,
+                95%,
+                .95
+            )`
+        );
+
+        gradient.addColorStop(
+            .2,
+            `hsla(
+                ${this.hue},
+                100%,
+                75%,
+                .95
+            )`
+        );
+
+        gradient.addColorStop(
+            .65,
+            `hsla(
+                ${this.hue},
+                85%,
+                50%,
+                .9
+            )`
+        );
+
+        gradient.addColorStop(
+            1,
+            `hsla(
+                ${this.hue},
+                80%,
+                25%,
+                .9
+            )`
+        );
+
+        ctx.fillStyle =
+            gradient;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            this.x,
+            this.y,
+            r,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+
+        const shine =
+            ctx.createRadialGradient(
+                this.x-r*.4,
+                this.y-r*.45,
+                0,
+                this.x-r*.4,
+                this.y-r*.45,
+                r*.45
+            );
+
+        shine.addColorStop(
+            0,
+            "rgba(255,255,255,.9)"
+        );
+
+        shine.addColorStop(
+            1,
+            "rgba(255,255,255,0)"
+        );
+
+        ctx.fillStyle =
+            shine;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            this.x-r*.32,
+            this.y-r*.34,
+            r*.35,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.strokeStyle =
+            `hsla(
+                ${this.hue},
+                100%,
+                90%,
+                .65
+            )`;
+
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            this.x,
+            this.y,
+            r,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+
+        ctx.restore();
+
+    }
+
+}
+
+/* LIFE PICKUP */
+class LifePickup {
+
+    constructor(
+        x,
+        y
+    ) {
+
+        this.x=x;
+        this.y=y;
+
+        this.radius=18;
+
+        this.velocityX =
+            (
+                Math.random()<.5
+                    ? -1
+                    : 1
+            ) *
+            (
+                1.5+
+                Math.random()*2
+            );
+
+        this.velocityY =
+            -6 -
+            Math.random()*2;
+
+        this.rotation =
+            Math.random() *
+            Math.PI * 2;
+
+        this.age=0;
+        this.alive=true;
+
+        this.phase =
+            Math.random() *
+            Math.PI * 2;
+
+    }
+
+    update(dt) {
+
+        this.age += dt;
+
+        this.velocityY +=
+            .22 * dt;
+
+        this.x +=
+            this.velocityX * dt;
+
+        this.y +=
+            this.velocityY * dt;
+
+        this.rotation +=
+            .035 * dt;
+
+        if (
+            this.x -
+            this.radius <= 8
+        ) {
+
+            this.x =
+                8 +
+                this.radius;
+
+            this.velocityX =
+                Math.abs(
+                    this.velocityX
+                );
+
+        }
+
+        if (
+            this.x +
+            this.radius >=
+            W - 8
+        ) {
+
+            this.x =
+                W -
+                8 -
+                this.radius;
+
+            this.velocityX =
+                -Math.abs(
+                    this.velocityX
+                );
+
+        }
+
+        if (
+            this.y +
+            this.radius >=
+            FLOOR
+        ) {
+
+            this.y =
+                FLOOR -
+                this.radius;
+
+            this.velocityY =
+                -Math.abs(
+                    this.velocityY
+                ) * .72;
+
+            if (
+                Math.abs(
+                    this.velocityY
+                ) < .7
+            ) {
+
+                this.velocityY=0;
+
+            }
+
+        }
+
+        if (
+            this.age >= 12000
+        ) {
+
+            this.alive=false;
+
+        }
+
+    }
+
+    draw() {
+
+        const pulse =
+            1 +
+            Math.sin(
+                performance.now()*.006+
+                this.phase
+            )*.1;
+
+        ctx.save();
+
+        ctx.translate(
+            this.x,
+            this.y
+        );
+
+        ctx.rotate(
+            Math.sin(
+                performance.now()*.003
+            )*.12
+        );
+
+        ctx.scale(
+            pulse,
+            pulse
+        );
+
+        ctx.shadowBlur=25;
+
+        ctx.shadowColor =
+            "rgba(255,70,100,.9)";
+
+        ctx.fillStyle =
+            "#ff365c";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+            this.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.shadowBlur=0;
+
+        ctx.fillStyle =
+            "#ff6b86";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -5,
+            -6,
+            7,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle =
+            "#ffffff";
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            9
+        );
+
+        ctx.bezierCurveTo(
+            -5,5,
+            -10,1,
+            -10,-4
+        );
+
+        ctx.bezierCurveTo(
+            -10,-9,
+            -4,-11,
+            0,-6
+        );
+
+        ctx.bezierCurveTo(
+            4,-11,
+            10,-9,
+            10,-4
+        );
+
+        ctx.bezierCurveTo(
+            10,1,
+            5,5,
+            0,9
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    }
+
+}
+
+/* LEVEL CREATION */
+function createLevel() {
+
+    bubbles=[];
+    harpoons=[];
+    lifePickups=[];
+    particles=[];
+    floatingTexts=[];
+
+    popBursts=[];
+    popShockwaves=[];
+    popRings=[];
+    popFlashes=[];
+
+    player.x =
+        W / 2;
+
+    player.velocityX=0;
+
+    player.fireCooldown=0;
+
+    player.invulnerable=1000;
+
+    /*
+        IMPORTANT:
+        COMBO IS NOT RESET HERE.
+
+        This means the combo survives
+        when the player clears a level.
+    */
+
+    const giantCount =
+        Math.min(
+            1 +
+            Math.floor(
+                (level-1)/2
+            ),
+            5
+        );
+
+    for(
+        let i=0;
+        i<giantCount;
+        i++
+    ){
+
+        let x;
+
+        do {
+
+            x =
+                120 +
+                Math.random() *
+                (W-240);
+
+        } while (
+            Math.abs(
+                x-player.x
+            ) < 160
+        );
+
+        bubbles.push(
+            new Bubble(
+                x,
+                180 +
+                Math.random()*100,
+                0
+            )
+        );
+
+    }
+
+    if(level>=4){
+
+        const extra =
+            Math.min(
+                level-3,
+                5
+            );
+
+        for(
+            let i=0;
+            i<extra;
+            i++
+        ){
+
+            bubbles.push(
+                new Bubble(
+                    100+
+                    Math.random()*
+                    (W-200),
+
+                    250+
+                    Math.random()*100,
+
+                    2
+                )
+
+            );
+
+        }
+
+    }
+
+}
+
+/* FIRE */
+function fireHarpoon(){
+
+    if(
+        gameState!=="playing"
+    )
+        return;
+
+    if(
+        player.fireCooldown>0
+    )
+        return;
+
+    player.fireCooldown=250;
+
+    harpoons.push({
+
+        x:player.x,
+
+        y:
+            player.y-
+            player.height/2,
+
+        top:
+            player.y-
+            player.height/2,
+
+        age:0,
+
+        maxAge:2000,
+
+        alive:true,
+
+        hitBubble:false
+
+    });
+
+    sound("fire");
+
+}
+
+/* SPLIT */
+function splitBubble(index){
+
+    const b =
+        bubbles[index];
+
+    if(
+        !b ||
+        !b.alive
+    )
+        return;
+
+    b.alive=false;
+
+    createExplosion(
+        b.x,
+        b.y,
+        b.radius,
+        b.hue
+    );
+
+    sound("pop");
+
+    cameraShake =
+        Math.max(
+            cameraShake,
+            5 +
+            b.radius*.025
+        );
+
+    /* COMBO */
+    addCombo();
+
+    const basePoints =
+        [500,300,150,75][
+            b.size
+        ];
+
+    const multiplier =
+        comboCount>=2
+            ? comboCount
+            : 1;
+
+    const points =
+        basePoints *
+        multiplier;
+
+    score += points;
+
+    let scoreText =
+        "+" + points;
+
+    if(multiplier>=2){
+
+        scoreText +=
+            "  x" +
+            multiplier;
+
+    }
+
+    floatingTexts.push({
+
+        x:b.x,
+
+        y:b.y,
+
+        text:scoreText,
+
+        alpha:1,
+
+        velocityY:-1.2
+
+    });
+
+    if(
+        Math.random()<.10
+    ){
+
+        lifePickups.push(
+            new LifePickup(
+                b.x,
+                b.y
+            )
+        );
+
+        for(
+            let i=0;
+            i<10;
+            i++
+        ){
+
+            const angle =
+                Math.random() *
+                Math.PI*2;
+
+            const speed =
+                Math.random()*3+1;
+
+            particles.push({
+
+                x:b.x,
+                y:b.y,
+
+                velocityX:
+                    Math.cos(angle) *
+                    speed,
+
+                velocityY:
+                    Math.sin(angle) *
+                    speed,
+
+                radius:
+                    Math.random()*3+1,
+
+                life:1,
+
+                special:true
+
+            });
+
+        }
+
+    }
+
+    if(
+        b.size<3
+    ){
+
+        const newSize =
+            b.size+1;
+
+        const offset =
+            b.radius*.35;
+
+        const child1 =
+            new Bubble(
+                b.x-offset,
+                b.y,
+                newSize
+            );
+
+        const child2 =
+            new Bubble(
+                b.x+offset,
+                b.y,
+                newSize
+            );
+
+        child1.velocityX =
+            -Math.abs(
+                child1.velocityX
+            );
+
+        child2.velocityX =
+            Math.abs(
+                child2.velocityX
+            );
+
+        child1.velocityY=-5;
+        child2.velocityY=-5;
+
+        child1.hue=b.hue;
+        child2.hue=b.hue;
+
+        bubbles.push(
+            child1,
+            child2
+        );
+
+    }
+
+}
+
+/* =========================================================
+   ULTRA POP EFFECT
+   ========================================================= */
+
+function createExplosion(
+    x,
+    y,
+    amount,
+    hue=200
+){
+
+    /*
+        MAIN BURST
+    */
+    popBursts.push({
+
+        x:x,
+        y:y,
+
+        radius:
+            amount*.12,
+
+        startRadius:
+            amount*.12,
+
+        maxRadius:
+            amount*1.75,
+
+        life:1,
+
+        hue:hue
+
+    });
+
+    /*
+        GIANT SHOCKWAVES
+    */
+    popShockwaves.push({
+
+        x:x,
+        y:y,
+
+        radius:amount*.05,
+
+        maxRadius:
+            amount*1.95,
+
+        life:1,
+
+        hue:hue,
+
+        width:
+            Math.max(
+                2,
+                amount*.07
+            )
+
+    });
+
+    popShockwaves.push({
+
+        x:x,
+        y:y,
+
+        radius:amount*.02,
+
+        maxRadius:
+            amount*1.45,
+
+        life:.78,
+
+        hue:hue+35,
+
+        width:
+            Math.max(
+                1.5,
+                amount*.045
+            )
+
+    });
+
+    /*
+        FAST OUTER RING
+    */
+    popRings.push({
+
+        x:x,
+        y:y,
+
+        radius:
+            amount*.1,
+
+        maxRadius:
+            amount*1.6,
+
+        life:1,
+
+        hue:hue,
+
+        rotation:
+            Math.random()*Math.PI*2
+
+    });
+
+    /*
+        WHITE FLASH
+    */
+    popFlashes.push({
+
+        x:x,
+        y:y,
+
+        radius:
+            amount*.45,
+
+        life:1
+
+    });
+
+    /*
+        HUGE COLORED PARTICLE BURST
+    */
+    const count =
+        Math.min(
+            75,
+            Math.floor(
+                amount*1.05
+            ) + 25
+        );
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const angle =
+            Math.random() *
+            Math.PI*2;
+
+        /*
+            Some particles start slower,
+            others shoot extremely fast.
+        */
+        const speed =
+            Math.random()<.18
+                ? Math.random()*12+10
+                : Math.random()*8+
+                  amount*.045+
+                  2;
+
+        const size =
+            Math.random()*4.5+
+            Math.max(
+                1.5,
+                amount*.018
+            );
+
+        particles.push({
+
+            x:x+
+                Math.cos(angle) *
+                Math.random() *
+                amount*.08,
+
+            y:y+
+                Math.sin(angle) *
+                Math.random() *
+                amount*.08,
+
+            velocityX:
+                Math.cos(angle) *
+                speed,
+
+            velocityY:
+                Math.sin(angle) *
+                speed,
+
+            radius:size,
+
+            life:
+                .9+
+                Math.random()*.45,
+
+            pop:true,
+
+            hue:
+                hue+
+                (Math.random()-.5)*35,
+
+            drag:
+                .90+
+                Math.random()*.045,
+
+            gravity:
+                .025+
+                Math.random()*.055,
+
+            rotation:
+                Math.random()*
+                Math.PI*2,
+
+            rotationSpeed:
+                (Math.random()-.5)*.35
+
+        });
+
+    }
+
+    /*
+        WHITE ENERGY SPARKS
+    */
+    const sparkCount =
+        Math.min(
+            30,
+            Math.floor(
+                amount/3
+            )+10
+        );
+
+    for(
+        let i=0;
+        i<sparkCount;
+        i++
+    ){
+
+        const angle =
+            Math.random() *
+            Math.PI*2;
+
+        const speed =
+            Math.random()*13+7;
+
+        particles.push({
+
+            x:x,
+            y:y,
+
+            velocityX:
+                Math.cos(angle) *
+                speed,
+
+            velocityY:
+                Math.sin(angle) *
+                speed,
+
+            radius:
+                Math.random()*2.8+1,
+
+            life:
+                .7+
+                Math.random()*.35,
+
+            pop:true,
+
+            spark:true,
+
+            hue:0,
+
+            drag:.92,
+
+            gravity:.015,
+
+            rotation:
+                Math.random()*
+                Math.PI*2,
+
+            rotationSpeed:
+                (Math.random()-.5)*.5
+
+        });
+
+    }
+
+    /*
+        LITTLE BUBBLE SHARDS
+    */
+    const shardCount =
+        Math.min(
+            24,
+            Math.floor(
+                amount/4
+            )+5
+        );
+
+    for(
+        let i=0;
+        i<shardCount;
+        i++
+    ){
+
+        const angle =
+            Math.random()*
+            Math.PI*2;
+
+        const speed =
+            Math.random()*8+3;
+
+        particles.push({
+
+            x:x,
+            y:y,
+
+            velocityX:
+                Math.cos(angle)*
+                speed,
+
+            velocityY:
+                Math.sin(angle)*
+                speed,
+
+            radius:
+                Math.random()*5+2,
+
+            life:
+                .8+
+                Math.random()*.25,
+
+            pop:true,
+
+            shard:true,
+
+            hue:
+                hue+
+                (Math.random()-.5)*20,
+
+            drag:.925,
+
+            gravity:
+                .08,
+
+            rotation:
+                Math.random()*
+                Math.PI*2,
+
+            rotationSpeed:
+                (Math.random()-.5)*.5
+
+        });
+
+    }
+
+}
+
+/* UPDATE */
+function update(dt){
+
+    if(
+        gameState!=="playing"
+    )
+        return;
+
+    const multiplier =
+        dt/16.67;
+
+    /*
+        COMBO TIMER
+
+        This runs ONLY while playing.
+
+        Therefore PAUSE completely
+        freezes the combo timer.
+    */
+    if(
+        comboCount>=2
+    ){
+
+        comboTimer -= dt;
+
+        if(
+            comboTimer<=0
+        ){
+
+            comboTimer=0;
+
+            startComboFade();
+
+        }
+
+        updateComboHUD();
+
+    }
+
+    if(
+        keys["arrowleft"] ||
+        keys["a"]
+    ){
+
+        player.velocityX -=
+            player.acceleration *
+            multiplier;
+
+        player.facing=-1;
+
+    }
+
+    if(
+        keys["arrowright"] ||
+        keys["d"]
+    ){
+
+        player.velocityX +=
+            player.acceleration *
+            multiplier;
+
+        player.facing=1;
+
+    }
+
+    player.velocityX *=
+        Math.pow(
+            player.friction,
+            multiplier
+        );
+
+    player.velocityX =
+        Math.max(
+            -player.maxSpeed,
+            Math.min(
+                player.maxSpeed,
+                player.velocityX
+            )
+        );
+
+    player.x +=
+        player.velocityX *
+        multiplier;
+
+    const half =
+        player.width/2;
+
+    if(
+        player.x<
+        half+10
+    ){
+
+        player.x=
+            half+10;
+
+        player.velocityX=0;
+
+    }
+
+    if(
+        player.x>
+        W-half-10
+    ){
+
+        player.x=
+            W-half-10;
+
+        player.velocityX=0;
+
+    }
+
+    player.fireCooldown =
+        Math.max(
+            0,
+            player.fireCooldown-dt
+        );
+
+    player.invulnerable =
+        Math.max(
+            0,
+            player.invulnerable-dt
+        );
+
+    for(
+        const b of bubbles
+    ){
+
+        if(b.alive)
+            b.update(
+                multiplier
+            );
+
+    }
+
+    for(
+        const h of harpoons
+    ){
+
+        if(!h.alive)
+            continue;
+
+        h.age += dt;
+
+        h.y -=
+            14 *
+            multiplier;
+
+        for(
+            let i=0;
+            i<bubbles.length;
+            i++
+        ){
+
+            const b =
+                bubbles[i];
+
+            if(!b.alive)
+                continue;
+
+            const horizontalDistance =
+                Math.abs(
+                    b.x-h.x
+                );
+
+            if(
+                horizontalDistance <=
+                    b.radius+3 &&
+
+                b.y+b.radius >=
+                    h.y &&
+
+                b.y-b.radius <=
+                    FLOOR
+            ){
+
+                splitBubble(i);
+
+                h.hitBubble=true;
+                h.alive=false;
+
+                break;
+
+            }
+
+        }
+
+        if(
+            h.y<=CEILING
+        )
+            h.y=CEILING;
+
+        if(
+            h.age>=h.maxAge
+        )
+            h.alive=false;
+
+    }
+
+    for(
+        const pickup of lifePickups
+    ){
+
+        if(!pickup.alive)
+            continue;
+
+        pickup.update(
+            multiplier
+        );
+
+        const dx =
+            player.x-
+            pickup.x;
+
+        const dy =
+            player.y-
+            pickup.y;
+
+        const distance =
+            Math.sqrt(
+                dx*dx+
+                dy*dy
+            );
+
+        if(
+            distance<
+            pickup.radius+25
+        ){
+
+            pickup.alive=false;
+
+            if(
+                lives<MAX_LIVES
+            ){
+
+                lives++;
+
+                sound("life");
+
+                floatingTexts.push({
+
+                    x:pickup.x,
+
+                    y:pickup.y,
+
+                    text:"+1 LIFE",
+
+                    alpha:1,
+
+                    velocityY:-1.4
+
+                });
+
+                createLifeCollectionEffect(
+                    pickup.x,
+                    pickup.y
+                );
+
+            }else{
+
+                score+=500;
+
+                sound("bonus");
+
+                floatingTexts.push({
+
+                    x:pickup.x,
+
+                    y:pickup.y,
+
+                    text:"+500",
+
+                    alpha:1,
+
+                    velocityY:-1.4
+
+                });
+
+                createBonusCollectionEffect(
+                    pickup.x,
+                    pickup.y
+                );
+
+            }
+
+            updateHUD();
+
+        }
+
+    }
+
+    if(
+        player.invulnerable<=0
+    ){
+
+        for(
+            const b of bubbles
+        ){
+
+            if(!b.alive)
+                continue;
+
+            const dx =
+                player.x-b.x;
+
+            const dy =
+                player.y-b.y;
+
+            const distance =
+                Math.sqrt(
+                    dx*dx+
+                    dy*dy
+                );
+
+            if(
+                distance<
+                b.radius+18
+            ){
+
+                loseLife();
+
+                break;
+
+            }
+
+        }
+
+    }
+
+    bubbles =
+        bubbles.filter(
+            b=>b.alive
+        );
+
+    harpoons =
+        harpoons.filter(
+            h=>h.alive
+        );
+
+    lifePickups =
+        lifePickups.filter(
+            p=>p.alive
+        );
+
+    /*
+        PARTICLES
+    */
+    for(
+        const p of particles
+    ){
+
+        p.x +=
+            p.velocityX *
+            multiplier;
+
+        p.y +=
+            p.velocityY *
+            multiplier;
+
+        if(p.pop){
+
+            p.velocityX *=
+                Math.pow(
+                    p.drag,
+                    multiplier
+                );
+
+            p.velocityY *=
+                Math.pow(
+                    p.drag,
+                    multiplier
+                );
+
+            p.velocityY +=
+                p.gravity *
+                multiplier;
+
+            p.rotation +=
+                p.rotationSpeed *
+                multiplier;
+
+            p.life -=
+                .030 *
+                multiplier;
+
+        }else{
+
+            p.velocityY +=
+                .12 *
+                multiplier;
+
+            p.life -=
+                .025 *
+                multiplier;
+
+        }
+
+    }
+
+    particles =
+        particles.filter(
+            p=>p.life>0
+        );
+
+    /*
+        POP BURSTS
+    */
+    for(
+        const burst of popBursts
+    ){
+
+        burst.life -=
+            .052 *
+            multiplier;
+
+        const progress =
+            1-burst.life;
+
+        burst.radius =
+            burst.startRadius+
+            (
+                burst.maxRadius-
+                burst.startRadius
+            ) *
+            Math.min(
+                1,
+                progress
+            );
+
+    }
+
+    popBursts =
+        popBursts.filter(
+            b=>b.life>0
+        );
+
+    /*
+        SHOCKWAVES
+    */
+    for(
+        const wave of popShockwaves
+    ){
+
+        wave.life -=
+            .042 *
+            multiplier;
+
+        const progress =
+            1-wave.life;
+
+        wave.radius =
+            wave.maxRadius *
+            progress;
+
+    }
+
+    popShockwaves =
+        popShockwaves.filter(
+            w=>w.life>0
+        );
+
+    /*
+        OUTER RINGS
+    */
+    for(
+        const ring of popRings
+    ){
+
+        ring.life -=
+            .055 *
+            multiplier;
+
+        ring.radius +=
+            (
+                ring.maxRadius -
+                ring.radius
+            ) *
+            .15 *
+            multiplier;
+
+    }
+
+    popRings =
+        popRings.filter(
+            r=>r.life>0
+        );
+
+    /*
+        FLASHES
+    */
+    for(
+        const flash of popFlashes
+    ){
+
+        flash.life -=
+            .12 *
+            multiplier;
+
+        flash.radius *=
+            1+
+            .18*
+            multiplier;
+
+    }
+
+    popFlashes =
+        popFlashes.filter(
+            f=>f.life>0
+        );
+
+    /*
+        FLOATING TEXT
+    */
+    for(
+        const t of floatingTexts
+    ){
+
+        t.y +=
+            t.velocityY *
+            multiplier;
+
+        t.alpha -=
+            .025 *
+            multiplier;
+
+    }
+
+    floatingTexts =
+        floatingTexts.filter(
+            t=>t.alpha>0
+        );
+
+    /*
+        LEVEL CLEAR
+    */
+    if(
+        bubbles.length===0 &&
+        levelTransition<=0
+    ){
+
+        levelTransition=1500;
+
+        sound("level");
+
+    }
+
+    if(
+        levelTransition>0
+    ){
+
+        levelTransition-=dt;
+
+        if(
+            levelTransition<=0
+        ){
+
+            level++;
+
+            /*
+                NO COMBO RESET HERE.
+                The combo carries over.
+            */
+            createLevel();
+
+        }
+
+    }
+
+    cameraShake *=
+        Math.pow(
+            .88,
+            multiplier
+        );
+
+    updateHUD();
+
+}
+
+/* LIFE COLLECTION */
+function createLifeCollectionEffect(
+    x,
+    y
+){
+
+    for(
+        let i=0;
+        i<25;
+        i++
+    ){
+
+        const angle =
+            Math.random()*
+            Math.PI*2;
+
+        const speed =
+            Math.random()*6+2;
+
+        particles.push({
+
+            x,
+            y,
+
+            velocityX:
+                Math.cos(angle)*
+                speed,
+
+            velocityY:
+                Math.sin(angle)*
+                speed,
+
+            radius:
+                Math.random()*4+1,
+
+            life:1,
+
+            special:true
+
+        });
+
+    }
+
+}
+
+/* BONUS */
+function createBonusCollectionEffect(
+    x,
+    y
+){
+
+    for(
+        let i=0;
+        i<35;
+        i++
+    ){
+
+        const angle =
+            Math.random()*
+            Math.PI*2;
+
+        const speed =
+            Math.random()*7+2;
+
+        particles.push({
+
+            x,
+            y,
+
+            velocityX:
+                Math.cos(angle)*
+                speed,
+
+            velocityY:
+                Math.sin(angle)*
+                speed,
+
+            radius:
+                Math.random()*4+1,
+
+            life:1,
+
+            bonus:true
+
+        });
+
+    }
+
+}
+
+/* LOSE LIFE */
+function loseLife(){
+
+    lives--;
+
+    sound("hurt");
+
+    cameraShake=15;
+
+    /*
+        DEATH BREAKS COMBO.
+    */
+    if(
+        comboCount>=2
+    ){
+
+        comboTimer=0;
+
+        comboHud.classList.remove(
+            "visible"
+        );
+
+    }
+
+    resetCombo(false);
+
+    createExplosion(
+        player.x,
+        player.y,
+        35,
+        190
+    );
+
+    if(
+        lives<=0
+    ){
+
+        gameState="gameover";
+
+        showGameOver();
+
+        return;
+
+    }
+
+    player.x =
+        W/2;
+
+    player.velocityX=0;
+
+    player.invulnerable=2500;
+
+}
+
+/* BACKGROUND */
+function drawBackground(){
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            CEILING,
+            0,
+            FLOOR
+        );
+
+    gradient.addColorStop(
+        0,
+        "#111b46"
+    );
+
+    gradient.addColorStop(
+        .5,
+        "#10132d"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#070914"
+    );
+
+    ctx.fillStyle=gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+    for(
+        const s of stars
+    ){
+
+        const alpha =
+            s.alpha+
+            Math.sin(
+                performance.now()*.001+
+                s.twinkle
+            )*.15;
+
+        ctx.fillStyle =
+            `rgba(
+                180,
+                220,
+                255,
+                ${alpha}
+            )`;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            s.x,
+            s.y,
+            s.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    }
+
+    drawCity();
+
+    const ceilingGradient =
+        ctx.createLinearGradient(
+            0,
+            CEILING-12,
+            0,
+            CEILING+12
+        );
+
+    ceilingGradient.addColorStop(
+        0,
+        "#303b6d"
+    );
+
+    ceilingGradient.addColorStop(
+        1,
+        "#111735"
+    );
+
+    ctx.fillStyle =
+        ceilingGradient;
+
+    ctx.fillRect(
+        0,
+        CEILING-10,
+        W,
+        20
+    );
+
+    const floorGradient =
+        ctx.createLinearGradient(
+            0,
+            FLOOR,
+            0,
+            H
+        );
+
+    floorGradient.addColorStop(
+        0,
+        "#29304f"
+    );
+
+    floorGradient.addColorStop(
+        1,
+        "#0b0e1b"
+    );
+
+    ctx.fillStyle =
+        floorGradient;
+
+    ctx.fillRect(
+        0,
+        FLOOR,
+        W,
+        H-FLOOR
+    );
+
+    ctx.fillStyle =
+        "rgba(100,170,255,.4)";
+
+    ctx.fillRect(
+        0,
+        FLOOR,
+        W,
+        2
+    );
+
+}
+
+/* CITY */
+function drawCity(){
+
+    ctx.save();
+
+    ctx.globalAlpha=.28;
+
+    const buildings=[
+        [30,430,100,220],
+        [145,500,90,150],
+        [260,380,130,270],
+        [415,450,90,200],
+        [530,350,145,300],
+        [700,440,95,210],
+        [820,390,125,260],
+        [965,460,100,190]
+    ];
+
+    for(
+        const b of buildings
+    ){
+
+        ctx.fillStyle=
+            "#182043";
+
+        ctx.fillRect(
+            b[0],
+            b[1],
+            b[2],
+            b[3]
+        );
+
+        ctx.fillStyle=
+            "#5b6aa3";
+
+        for(
+            let x=b[0]+12;
+            x<b[0]+b[2]-8;
+            x+=22
+        ){
+
+            for(
+                let y=b[1]+15;
+                y<FLOOR-10;
+                y+=30
+            ){
+
+                ctx.fillRect(
+                    x,
+                    y,
+                    7,
+                    9
+                );
+
+            }
+
+        }
+
+    }
+
+    ctx.restore();
+
+}
+
+/* HARPOONS */
+function drawHarpoons(){
+
+    for(
+        const h of harpoons
+    ){
+
+        if(!h.alive)
+            continue;
+
+        let alpha=1;
+
+        if(
+            h.age>
+            h.maxAge-300
+        ){
+
+            alpha =
+                (
+                    h.maxAge-
+                    h.age
+                )/300;
+
+        }
+
+        alpha =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    alpha
+                )
+            );
+
+        ctx.save();
+
+        ctx.globalAlpha=alpha;
+
+        ctx.shadowBlur=18;
+
+        ctx.shadowColor=
+            "#65eaff";
+
+        const gradient =
+            ctx.createLinearGradient(
+                h.x,
+                h.y,
+                h.x,
+                FLOOR
+            );
+
+        gradient.addColorStop(
+            0,
+            "rgba(220,255,255,1)"
+        );
+
+        gradient.addColorStop(
+            .25,
+            "rgba(100,235,255,.95)"
+        );
+
+        gradient.addColorStop(
+            .7,
+            "rgba(70,170,255,.7)"
+        );
+
+        gradient.addColorStop(
+            1,
+            "rgba(70,120,255,.15)"
+        );
+
+        ctx.fillStyle=
+            gradient;
+
+        ctx.fillRect(
+            h.x-5,
+            h.y,
+            10,
+            FLOOR-h.y
+        );
+
+        ctx.shadowBlur=5;
+
+        ctx.fillStyle=
+            "rgba(240,255,255,.95)";
+
+        ctx.fillRect(
+            h.x-1.5,
+            h.y,
+            3,
+            FLOOR-h.y
+        );
+
+        ctx.shadowBlur=15;
+
+        ctx.shadowColor=
+            "#65eaff";
+
+        ctx.fillStyle=
+            "#eaffff";
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            h.x,
+            h.y-12
+        );
+
+        ctx.lineTo(
+            h.x-7,
+            h.y+3
+        );
+
+        ctx.lineTo(
+            h.x+7,
+            h.y+3
+        );
+
+        ctx.closePath();
+
+        ctx.fill();
+
+        ctx.restore();
+
+    }
+
+}
+
+/* LIFE PICKUPS */
+function drawLifePickups(){
+
+    for(
+        const pickup of lifePickups
+    )
+
+        if(pickup.alive)
+            pickup.draw();
+
+}
+
+/* ULTRA POP DRAW */
+function drawPopEffects(){
+
+    /*
+        FLASH
+    */
+    for(
+        const flash of popFlashes
+    ){
+
+        const alpha =
+            Math.max(
+                0,
+                flash.life
+            );
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            alpha*.55;
+
+        ctx.shadowBlur=45;
+
+        ctx.shadowColor="#ffffff";
+
+        const gradient =
+            ctx.createRadialGradient(
+                flash.x,
+                flash.y,
+                0,
+                flash.x,
+                flash.y,
+                flash.radius
+            );
+
+        gradient.addColorStop(
+            0,
+            `rgba(
+                255,
+                255,
+                255,
+                ${alpha}
+            )`
+        );
+
+        gradient.addColorStop(
+            .2,
+            `rgba(
+                220,
+                250,
+                255,
+                ${alpha*.7}
+            )`
+        );
+
+        gradient.addColorStop(
+            1,
+            "rgba(255,255,255,0)"
+        );
+
+        ctx.fillStyle=gradient;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            flash.x,
+            flash.y,
+            flash.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    }
+
+    /*
+        MAIN GLOW
+    */
+    for(
+        const burst of popBursts
+    ){
+
+        const alpha =
+            Math.max(
+                0,
+                burst.life
+            );
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            alpha*.8;
+
+        ctx.shadowBlur =
+            35+
+            burst.radius*.2;
+
+        ctx.shadowColor =
+            `hsla(
+                ${burst.hue},
+                100%,
+                70%,
+                ${alpha}
+            )`;
+
+        const gradient =
+            ctx.createRadialGradient(
+                burst.x,
+                burst.y,
+                0,
+                burst.x,
+                burst.y,
+                burst.radius
+            );
+
+        gradient.addColorStop(
+            0,
+            `rgba(
+                255,
+                255,
+                255,
+                ${alpha*.95}
+            )`
+        );
+
+        gradient.addColorStop(
+            .08,
+            `hsla(
+                ${burst.hue},
+                100%,
+                95%,
+                ${alpha}
+            )`
+        );
+
+        gradient.addColorStop(
+            .25,
+            `hsla(
+                ${burst.hue},
+                100%,
+                75%,
+                ${alpha*.7}
+            )`
+        );
+
+        gradient.addColorStop(
+            .55,
+            `hsla(
+                ${burst.hue},
+                100%,
+                55%,
+                ${alpha*.28}
+            )`
+        );
+
+        gradient.addColorStop(
+            1,
+            `hsla(
+                ${burst.hue},
+                100%,
+                50%,
+                0
+            )`
+        );
+
+        ctx.fillStyle=
+            gradient;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            burst.x,
+            burst.y,
+            burst.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        /*
+            Hot white center
+        */
+        if(alpha>.15){
+
+            ctx.globalAlpha =
+                alpha*.95;
+
+            ctx.shadowBlur=25;
+
+            ctx.shadowColor=
+                "#ffffff";
+
+            ctx.fillStyle =
+                `rgba(
+                    255,
+                    255,
+                    255,
+                    ${alpha*.85}
+                )`;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                burst.x,
+                burst.y,
+                Math.max(
+                    2,
+                    burst.radius*.12
+                ),
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+        }
+
+        ctx.restore();
+
+    }
+
+    /*
+        SHOCKWAVE RINGS
+    */
+    for(
+        const wave of popShockwaves
+    ){
+
+        const alpha =
+            Math.max(
+                0,
+                wave.life
+            );
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            alpha*.9;
+
+        ctx.shadowBlur=22;
+
+        ctx.shadowColor =
+            `hsla(
+                ${wave.hue},
+                100%,
+                75%,
+                ${alpha}
+            )`;
+
+        ctx.strokeStyle =
+            `hsla(
+                ${wave.hue},
+                100%,
+                88%,
+                ${alpha}
+            )`;
+
+        ctx.lineWidth =
+            wave.width *
+            (.35+alpha);
+
+        ctx.beginPath();
+
+        ctx.arc(
+            wave.x,
+            wave.y,
+            wave.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
+
+        ctx.globalAlpha =
+            alpha*.5;
+
+        ctx.lineWidth =
+            wave.width*.3;
+
+        ctx.strokeStyle=
+            "#ffffff";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            wave.x,
+            wave.y,
+            wave.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
+
+        ctx.restore();
+
+    }
+
+    /*
+        FAST ENERGY RINGS
+    */
+    for(
+        const ring of popRings
+    ){
+
+        const alpha =
+            Math.max(
+                0,
+                ring.life
+            );
+
+        ctx.save();
+
+        ctx.translate(
+            ring.x,
+            ring.y
+        );
+
+        ctx.rotate(
+            ring.rotation
+        );
+
+        ctx.globalAlpha =
+            alpha*.75;
+
+        ctx.shadowBlur=20;
+
+        ctx.shadowColor =
+            `hsla(
+                ${ring.hue},
+                100%,
+                70%,
+                ${alpha}
+            )`;
+
+        ctx.strokeStyle =
+            `hsla(
+                ${ring.hue},
+                100%,
+                85%,
+                ${alpha}
+            )`;
+
+        ctx.lineWidth =
+            Math.max(
+                2,
+                ring.radius*.025
+            );
+
+        /*
+            Broken energy circle
+        */
+        for(
+            let i=0;
+            i<8;
+            i++
+        ){
+
+            const start =
+                i *
+                (Math.PI*2/8);
+
+            const end =
+                start +
+                Math.PI/14;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                0,
+                0,
+                ring.radius,
+                start,
+                end
+            );
+
+            ctx.stroke();
+
+        }
+
+        ctx.restore();
+
+    }
+
+    /*
+        RADIAL ENERGY STREAKS
+    */
+    for(
+        const burst of popBursts
+    ){
+
+        const alpha =
+            Math.max(
+                0,
+                burst.life
+            );
+
+        const rayCount=16;
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            alpha*.55;
+
+        ctx.lineCap="round";
+
+        for(
+            let i=0;
+            i<rayCount;
+            i++
+        ){
+
+            const angle =
+                i *
+                Math.PI*2 /
+                rayCount;
+
+            const inner =
+                burst.radius*.72;
+
+            const outer =
+                burst.radius*
+                (
+                    1.15+
+                    Math.sin(
+                        i*2.7
+                    )*.08
+                );
+
+            const x1 =
+                burst.x+
+                Math.cos(angle)*
+                inner;
+
+            const y1 =
+                burst.y+
+                Math.sin(angle)*
+                inner;
+
+            const x2 =
+                burst.x+
+                Math.cos(angle)*
+                outer;
+
+            const y2 =
+                burst.y+
+                Math.sin(angle)*
+                outer;
+
+            const gradient =
+                ctx.createLinearGradient(
+                    x1,
+                    y1,
+                    x2,
+                    y2
+                );
+
+            gradient.addColorStop(
+                0,
+                `hsla(
+                    ${burst.hue},
+                    100%,
+                    90%,
+                    ${alpha}
+                )`
+            );
+
+            gradient.addColorStop(
+                1,
+                `hsla(
+                    ${burst.hue},
+                    100%,
+                    70%,
+                    0
+                )`
+            );
+
+            ctx.strokeStyle=
+                gradient;
+
+            ctx.lineWidth =
+                Math.max(
+                    1,
+                    burst.radius*.025
+                );
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x1,
+                y1
+            );
+
+            ctx.lineTo(
+                x2,
+                y2
+            );
+
+            ctx.stroke();
+
+        }
+
+        ctx.restore();
+
+    }
+
+}
+
+/* PLAYER */
+function drawPlayer(){
+
+    if(
+        player.invulnerable>0 &&
+        Math.floor(
+            player.invulnerable/100
+        )%2===0
+    )
+        return;
+
+    ctx.save();
+
+    ctx.translate(
+        player.x,
+        player.y
+    );
+
+    ctx.fillStyle=
+        "rgba(0,0,0,.35)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        26,
+        23,
+        6,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle=
+        "#202840";
+
+    ctx.fillRect(
+        -12,
+        8,
+        9,
+        20
+    );
+
+    ctx.fillRect(
+        3,
+        8,
+        9,
+        20
+    );
+
+    const bodyGradient =
+        ctx.createLinearGradient(
+            -15,
+            -15,
+            15,
+            20
+        );
+
+    bodyGradient.addColorStop(
+        0,
+        "#5be9ff"
+    );
+
+    bodyGradient.addColorStop(
+        1,
+        "#3264e8"
+    );
+
+    ctx.fillStyle=
+        bodyGradient;
+
+    roundRect(
+        ctx,
+        -15,
+        -18,
+        30,
+        34,
+        7
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle=
+        "#ffd5ae";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        -27,
+        12,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle=
+        "#23233b";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        -31,
+        12,
+        Math.PI,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle=
+        "#14182b";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        4,
+        -28,
+        1.5,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.strokeStyle=
+        "#ffd5ae";
+
+    ctx.lineWidth=6;
+
+    ctx.lineCap="round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        player.facing*9,
+        -8
+    );
+
+    ctx.lineTo(
+        player.facing*20,
+        -15
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+
+}
+
+/* PARTICLES */
+function drawParticles(){
+
+    for(
+        const p of particles
+    ){
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            Math.max(
+                0,
+                p.life
+            );
+
+        if(p.pop){
+
+            if(p.spark){
+
+                ctx.translate(
+                    p.x,
+                    p.y
+                );
+
+                ctx.rotate(
+                    Math.atan2(
+                        p.velocityY,
+                        p.velocityX
+                    )
+                );
+
+                ctx.shadowBlur=16;
+
+                ctx.shadowColor=
+                    "#ffffff";
+
+                const length =
+                    p.radius*6+
+                    Math.min(
+                        14,
+                        Math.sqrt(
+                            p.velocityX*
+                            p.velocityX+
+                            p.velocityY*
+                            p.velocityY
+                        )*.6
+                    );
+
+                const gradient =
+                    ctx.createLinearGradient(
+                        -length,
+                        0,
+                        length,
+                        0
+                    );
+
+                gradient.addColorStop(
+                    0,
+                    "rgba(255,255,255,0)"
+                );
+
+                gradient.addColorStop(
+                    .45,
+                    "rgba(255,255,255,.95)"
+                );
+
+                gradient.addColorStop(
+                    .6,
+                    "rgba(220,250,255,1)"
+                );
+
+                gradient.addColorStop(
+                    1,
+                    "rgba(170,240,255,0)"
+                );
+
+                ctx.strokeStyle=
+                    gradient;
+
+                ctx.lineWidth =
+                    Math.max(
+                        1,
+                        p.radius*.8
+                    );
+
+                ctx.lineCap="round";
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    -length,
+                    0
+                );
+
+                ctx.lineTo(
+                    length,
+                    0
+                );
+
+                ctx.stroke();
+
+            }
+
+            else if(p.shard){
+
+                ctx.translate(
+                    p.x,
+                    p.y
+                );
+
+                ctx.rotate(
+                    p.rotation
+                );
+
+                ctx.shadowBlur=10;
+
+                ctx.shadowColor =
+                    `hsla(
+                        ${p.hue},
+                        100%,
+                        70%,
+                        ${p.life}
+                    )`;
+
+                ctx.fillStyle =
+                    `hsla(
+                        ${p.hue},
+                        100%,
+                        70%,
+                        ${p.life}
+                    )`;
+
+                /*
+                    Angular bubble fragment
+                */
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    -p.radius,
+                    p.radius*.3
+                );
+
+                ctx.lineTo(
+                    -p.radius*.25,
+                    -p.radius
+                );
+
+                ctx.lineTo(
+                    p.radius,
+                    -p.radius*.15
+                );
+
+                ctx.lineTo(
+                    p.radius*.3,
+                    p.radius
+                );
+
+                ctx.closePath();
+
+                ctx.fill();
+
+                ctx.strokeStyle=
+                    `rgba(
+                        255,
+                        255,
+                        255,
+                        ${p.life*.65}
+                    )`;
+
+                ctx.lineWidth=1;
+
+                ctx.stroke();
+
+            }
+
+            else{
+
+                ctx.shadowBlur=11;
+
+                ctx.shadowColor =
+                    `hsla(
+                        ${p.hue},
+                        100%,
+                        70%,
+                        ${p.life}
+                    )`;
+
+                ctx.fillStyle =
+                    `hsla(
+                        ${p.hue},
+                        100%,
+                        72%,
+                        ${p.life}
+                    )`;
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    p.x,
+                    p.y,
+                    p.radius,
+                    0,
+                    Math.PI*2
+                );
+
+                ctx.fill();
+
+                if(
+                    p.radius>2
+                ){
+
+                    ctx.fillStyle =
+                        `rgba(
+                            255,
+                            255,
+                            255,
+                            ${p.life*.7}
+                        )`;
+
+                    ctx.beginPath();
+
+                    ctx.arc(
+                        p.x-p.radius*.3,
+                        p.y-p.radius*.3,
+                        p.radius*.28,
+                        0,
+                        Math.PI*2
+                    );
+
+                    ctx.fill();
+
+                }
+
+            }
+
+        }
+
+        else{
+
+            if(p.bonus)
+
+                ctx.fillStyle=
+                    "#ffe66b";
+
+            else if(p.special)
+
+                ctx.fillStyle=
+                    "#ff6680";
+
+            else
+
+                ctx.fillStyle=
+                    "#76eaff";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                p.x,
+                p.y,
+                p.radius,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+        }
+
+        ctx.restore();
+
+    }
+
+    ctx.globalAlpha=1;
+
+}
+
+/* FLOATING TEXT */
+function drawFloatingText(){
+
+    for(
+        const t of floatingTexts
+    ){
+
+        ctx.save();
+
+        ctx.globalAlpha=
+            t.alpha;
+
+        ctx.textAlign=
+            "center";
+
+        ctx.font=
+            "bold 20px Arial";
+
+        ctx.shadowBlur=8;
+
+        if(
+            t.text==="+1 LIFE"
+        ){
+
+            ctx.fillStyle=
+                "#ff6680";
+
+            ctx.shadowColor=
+                "#ff3158";
+
+        }
+
+        else if(
+            t.text==="+500"
+        ){
+
+            ctx.fillStyle=
+                "#ffe66b";
+
+            ctx.shadowColor=
+                "#ffad32";
+
+        }
+
+        else if(
+            t.text.includes("x")
+        ){
+
+            ctx.fillStyle=
+                "#65eaff";
+
+            ctx.shadowColor=
+                "#65eaff";
+
+        }
+
+        else{
+
+            ctx.fillStyle=
+                "#ffffff";
+
+            ctx.shadowColor=
+                "#5aeaff";
+
+        }
+
+        ctx.fillText(
+            t.text,
+            t.x,
+            t.y
+        );
+
+        ctx.restore();
+
+    }
+
+}
+
+/* PAUSE */
+function togglePause(){
+
+    if(
+        gameState==="playing"
+    ){
+
+        gameState="paused";
+
+        overlay.style.display=
+            "flex";
+
+        overlay.innerHTML=`
+
+            <div class="panel">
+
+                <div
+                    class="logo"
+                    style="font-size:52px"
+                >
+                    PAUSED
+                </div>
+
+                <div class="subtitle">
+                    Take a breath.
+                </div>
+
+                <button id="resumeButton">
+                    RESUME
+                </button>
+
+                <div class="controls">
+                    Press <b>P</b> to resume
+                </div>
+
+            </div>
+
+        `;
+
+        document
+            .getElementById(
+                "resumeButton"
+            )
+            .onclick=()=>{
+
+                overlay.style.display=
+                    "none";
+
+                gameState="playing";
+
+            };
+
+    }
+
+    else if(
+        gameState==="paused"
+    ){
+
+        overlay.style.display=
+            "none";
+
+        gameState="playing";
+
+    }
+
+}
+
+/* START */
+startButton.onclick=
+    startGame;
+
+function startGame(){
+
+    initAudio();
+
+    score=0;
+    level=1;
+    lives=3;
+
+    /*
+        New game = new combo.
+    */
+    resetCombo(true);
+
+    gameState="playing";
+
+    overlay.style.display=
+        "none";
+
+    createLevel();
+
+    updateHUD();
+
+}
+
+/* GAME OVER */
+function showGameOver(){
+
+    resetCombo(true);
+
+    overlay.style.display=
+        "flex";
+
+    overlay.innerHTML=`
+
+        <div class="panel">
+
+            <div
+                class="logo"
+                style="font-size:55px"
+            >
+                GAME OVER
+            </div>
+
+            <div class="subtitle">
+                Final Score
+            </div>
+
+            <div
+                style="
+                    font-size:42px;
+                    font-weight:900;
+                    margin-bottom:28px
+                "
+            >
+                ${score
+                    .toString()
+                    .padStart(6,"0")}
+            </div>
+
+            <button id="restartButton">
+                PLAY AGAIN
+            </button>
+
+            <div class="controls">
+                You reached level ${level}
+            </div>
+
+        </div>
+
+    `;
+
+    document
+        .getElementById(
+            "restartButton"
+        )
+        .onclick=
+            startGame;
+
+}
+
+/* HUD */
+function updateHUD(){
+
+    scoreElement.textContent =
+        score
+        .toString()
+        .padStart(
+            6,
+            "0"
+        );
+
+    levelElement.textContent =
+        level;
+
+    lives =
+        Math.min(
+            lives,
+            MAX_LIVES
+        );
+
+    livesElement.textContent =
+        "♥ ".repeat(
+            lives
+        ).trim();
+
+}
+
+/* ROUND RECT */
+function roundRect(
+    ctx,
+    x,
+    y,
+    width,
+    height,
+    radius
+){
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        x,
+        y,
+        width,
+        height,
+        radius
+    );
+
+}
+
+/* DRAW */
+function draw(){
+
+    ctx.save();
+
+    if(
+        cameraShake>.1
+    ){
+
+        ctx.translate(
+
+            (
+                Math.random()-.5
+            )*
+            cameraShake,
+
+            (
+                Math.random()-.5
+            )*
+            cameraShake
+
+        );
+
+    }
+
+    drawBackground();
+
+    for(
+        const b of bubbles
+    ){
+
+        if(b.alive)
+            b.draw();
+
+    }
+
+    /*
+        ULTRA POP EFFECT
+        draws directly over the
+        bubble being destroyed.
+    */
+    drawPopEffects();
+
+    drawHarpoons();
+
+    drawLifePickups();
+
+    drawParticles();
+
+    drawPlayer();
+
+    drawFloatingText();
+
+    if(
+        levelTransition>0 &&
+        bubbles.length===0
+    ){
+
+        ctx.save();
+
+        ctx.fillStyle =
+            `rgba(
+                0,
+                0,
+                0,
+                ${Math.min(
+                    .55,
+                    (
+                        1500-
+                        levelTransition
+                    )/1500
+                )}
+            )`;
+
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
+        );
+
+        ctx.textAlign=
+            "center";
+
+        ctx.font=
+            "900 48px Arial";
+
+        ctx.fillStyle=
+            "#ffffff";
+
+        ctx.shadowBlur=20;
+
+        ctx.shadowColor=
+            "#65eaff";
+
+        ctx.fillText(
+            "LEVEL CLEAR!",
+            W/2,
+            H/2
+        );
+
+        /*
+            Show combo during level clear
+            if the player currently has one.
+        */
+        if(
+            comboCount>=2
+        ){
+
+            ctx.font=
+                "900 22px Arial";
+
+            ctx.shadowBlur=12;
+
+            ctx.fillStyle=
+                "#65eaff";
+
+            ctx.fillText(
+                "COMBO x"+
+                comboCount+
+                " CARRIED OVER",
+                W/2,
+                H/2+78
+            );
+
+        }
+
+        ctx.font=
+            "bold 18px Arial";
+
+        ctx.shadowBlur=0;
+
+        ctx.fillStyle=
+            "#ffffff";
+
+        ctx.fillText(
+            "GET READY...",
+            W/2,
+            H/2+38
+        );
+
+        ctx.restore();
+
+    }
+
+    ctx.restore();
+
+}
+
+/* LOOP */
+function gameLoop(time){
+
+    const dt =
+        Math.min(
+            40,
+            time-lastTime
+        );
+
+    lastTime=time;
+
+    update(dt);
+
+    draw();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+requestAnimationFrame(
+    gameLoop
+);
+
+/* CONTEXT MENU */
+canvas.addEventListener(
+    "contextmenu",
+    e=>e.preventDefault()
+);
+
+/* INITIAL HUD */
+updateHUD();
+
+</script>
+
+</body>
+</html>
