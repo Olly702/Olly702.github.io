@@ -1,488 +1,885 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Epic Master Games</title>
+<title>Epic Master Games</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background:
+            radial-gradient(circle at 20% 20%, rgba(80, 40, 150, 0.18), transparent 30%),
+            radial-gradient(circle at 80% 80%, rgba(0, 120, 255, 0.15), transparent 30%),
+            #08080d;
+        color: white;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* =========================
+       BACKGROUND
+    ========================= */
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 40px 40px;
+        mask-image: linear-gradient(to bottom, black, transparent);
+    }
+
+    /* =========================
+       NAVBAR
+    ========================= */
+
+    nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        height: 72px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 0 7%;
+
+        background: rgba(8, 8, 13, 0.8);
+        backdrop-filter: blur(15px);
+
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .logo {
+        font-size: 21px;
+        font-weight: 900;
+        letter-spacing: 1px;
+    }
+
+    .logo span {
+        color: #8b5cf6;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 28px;
+    }
+
+    .nav-links a {
+        color: #aaa;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 700;
+        transition: 0.2s;
+    }
+
+    .nav-links a:hover {
+        color: white;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+        min-height: 520px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        text-align: center;
+
+        padding: 90px 20px 70px;
+
+        position: relative;
+    }
+
+    .hero-badge {
+        display: inline-block;
+
+        padding: 8px 15px;
+
+        border: 1px solid rgba(139, 92, 246, 0.45);
+        border-radius: 999px;
+
+        background: rgba(139, 92, 246, 0.08);
+
+        color: #b99cff;
+
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+
+        margin-bottom: 25px;
+    }
+
+    .hero h1 {
+        font-size: clamp(52px, 9vw, 105px);
+        line-height: 0.95;
+        font-weight: 1000;
+        letter-spacing: -5px;
+
+        background: linear-gradient(
+            135deg,
+            #ffffff,
+            #cfc4ff,
+            #8b5cf6
+        );
+
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+
+        margin-bottom: 25px;
+    }
+
+    .hero p {
+        max-width: 650px;
+
+        color: #999;
+
+        font-size: 18px;
+        line-height: 1.7;
+
+        margin-bottom: 35px;
+    }
+
+    .hero-button {
+        display: inline-block;
+
+        padding: 15px 27px;
+
+        border-radius: 12px;
+
+        background: #8b5cf6;
+
+        color: white;
+        text-decoration: none;
+
+        font-weight: 900;
+        font-size: 14px;
+
+        box-shadow:
+            0 0 30px rgba(139, 92, 246, 0.25);
+
+        transition: 0.2s;
+    }
+
+    .hero-button:hover {
+        transform: translateY(-3px);
+        background: #9d75ff;
+
+        box-shadow:
+            0 0 40px rgba(139, 92, 246, 0.45);
+    }
+
+    /* =========================
+       GAMES
+    ========================= */
+
+    .games-section {
+        max-width: 1150px;
+        margin: auto;
+
+        padding: 50px 25px 100px;
+    }
+
+    .section-header {
+        margin-bottom: 30px;
+    }
+
+    .section-header h2 {
+        font-size: 32px;
+        font-weight: 900;
+        margin-bottom: 8px;
+    }
+
+    .section-header p {
+        color: #777;
+        font-size: 15px;
+    }
+
+    .games-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(auto-fit, minmax(290px, 1fr));
+
+        gap: 25px;
+    }
+
+    /* =========================
+       GAME CARD
+    ========================= */
+
+    .game-card {
+        position: relative;
+
+        min-height: 370px;
+
+        border-radius: 20px;
+
+        overflow: hidden;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(255,255,255,0.07),
+                rgba(255,255,255,0.025)
+            );
+
+        border: 1px solid rgba(255,255,255,0.09);
+
+        box-shadow:
+            0 20px 60px rgba(0,0,0,0.25);
+
+        transition:
+            transform 0.25s,
+            border-color 0.25s,
+            box-shadow 0.25s;
+    }
+
+    .game-card:hover {
+        transform: translateY(-8px);
+
+        border-color: rgba(139, 92, 246, 0.45);
+
+        box-shadow:
+            0 25px 70px rgba(0,0,0,0.4),
+            0 0 40px rgba(139, 92, 246, 0.08);
+    }
+
+    /* =========================
+       GAME ART
+    ========================= */
+
+    .game-art {
+        height: 190px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        position: relative;
+
+        background:
+            radial-gradient(
+                circle at center,
+                rgba(139,92,246,0.35),
+                transparent 60%
+            ),
+            linear-gradient(
+                135deg,
+                #151020,
+                #08080d
+            );
+
+        overflow: hidden;
+    }
+
+    .game-art::before {
+        content: "";
+
+        position: absolute;
+        inset: -50%;
+
+        background:
+            radial-gradient(
+                circle,
+                rgba(255,255,255,0.07) 1px,
+                transparent 1px
+            );
+
+        background-size: 18px 18px;
+
+        transform: rotate(10deg);
+    }
+
+    /* Balloon */
+
+    .balloon {
+        position: relative;
+
+        width: 85px;
+        height: 105px;
+
+        border-radius: 50% 50% 47% 47%;
+
+        background:
+            radial-gradient(
+                circle at 35% 28%,
+                #ffb3d8,
+                #ff3d91 38%,
+                #b9005e 100%
+            );
+
+        box-shadow:
+            0 0 35px rgba(255, 40, 140, 0.5);
+
+        z-index: 2;
+
+        animation: floatBalloon 3s ease-in-out infinite;
+    }
+
+    .balloon::after {
+        content: "";
+
+        position: absolute;
+
+        bottom: -15px;
+        left: 50%;
+
+        transform: translateX(-50%);
+
+        width: 2px;
+        height: 25px;
+
+        background: rgba(255,255,255,0.55);
+    }
+
+    .balloon::before {
+        content: "";
+
+        position: absolute;
+
+        bottom: -7px;
+        left: 50%;
+
+        transform: translateX(-50%);
+
+        width: 10px;
+        height: 10px;
+
+        background: #b9005e;
+
+        clip-path: polygon(
+            50% 100%,
+            0 0,
+            100% 0
+        );
+    }
+
+    @keyframes floatBalloon {
+        0%, 100% {
+            transform: translateY(5px) rotate(-2deg);
         }
 
-        html {
-            scroll-behavior: smooth;
+        50% {
+            transform: translateY(-8px) rotate(2deg);
+        }
+    }
+
+    /* Small balloons */
+
+    .small-balloon {
+        position: absolute;
+
+        width: 35px;
+        height: 45px;
+
+        border-radius: 50%;
+
+        background: #7c3aed;
+
+        opacity: 0.7;
+
+        box-shadow: 0 0 20px rgba(124,58,237,0.5);
+
+        animation: floatSmall 4s ease-in-out infinite;
+    }
+
+    .small-balloon.one {
+        left: 18%;
+        top: 30%;
+    }
+
+    .small-balloon.two {
+        right: 18%;
+        top: 20%;
+        animation-delay: 1s;
+    }
+
+    @keyframes floatSmall {
+        0%, 100% {
+            transform: translateY(5px);
         }
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background:
-                radial-gradient(circle at top, #202044 0%, #0b0b12 45%);
-            color: white;
-            min-height: 100vh;
+        50% {
+            transform: translateY(-12px);
         }
+    }
 
-        /* =========================
-           HEADER
-        ========================= */
+    /* Harpoon */
 
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
+    .harpoon {
+        position: absolute;
 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        width: 3px;
+        height: 150px;
 
-            padding: 20px 50px;
+        background: white;
 
-            background: rgba(12, 12, 20, 0.9);
-            backdrop-filter: blur(12px);
+        left: 50%;
+        bottom: -35px;
 
-            border-bottom: 1px solid #29293d;
-        }
+        transform: translateX(-50%);
 
-        .logo {
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 1px;
-        }
+        box-shadow:
+            0 0 10px white,
+            0 0 20px #8b5cf6;
+
+        z-index: 3;
+    }
+
+    .harpoon-tip {
+        position: absolute;
+
+        top: -8px;
+        left: 50%;
+
+        width: 15px;
+        height: 15px;
+
+        transform:
+            translateX(-50%)
+            rotate(45deg);
+
+        border-left: 3px solid white;
+        border-top: 3px solid white;
+    }
+
+    /* =========================
+       CARD CONTENT
+    ========================= */
+
+    .game-content {
+        padding: 24px;
+    }
+
+    .game-tag {
+        display: inline-block;
+
+        font-size: 10px;
+        font-weight: 900;
+
+        letter-spacing: 1px;
+
+        color: #a78bfa;
+
+        margin-bottom: 10px;
+    }
+
+    .game-content h3 {
+        font-size: 25px;
+        font-weight: 900;
+
+        margin-bottom: 10px;
+    }
+
+    .game-content p {
+        color: #888;
+
+        font-size: 14px;
+        line-height: 1.6;
+
+        min-height: 67px;
+
+        margin-bottom: 20px;
+    }
+
+    .play-button {
+        display: block;
+
+        width: 100%;
+
+        padding: 13px;
+
+        border-radius: 10px;
+
+        background: white;
+
+        color: #08080d;
+
+        text-decoration: none;
+
+        text-align: center;
+
+        font-size: 13px;
+        font-weight: 900;
+
+        transition: 0.2s;
+    }
+
+    .play-button:hover {
+        background: #8b5cf6;
+        color: white;
+
+        transform: translateY(-2px);
+    }
+
+    /* =========================
+       COMING SOON
+    ========================= */
+
+    .coming-soon {
+        min-height: 370px;
+
+        border-radius: 20px;
+
+        border: 1px dashed rgba(255,255,255,0.12);
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+        justify-content: center;
+
+        text-align: center;
+
+        background: rgba(255,255,255,0.015);
+    }
+
+    .coming-soon-icon {
+        font-size: 45px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    .coming-soon h3 {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    .coming-soon p {
+        color: #666;
+        font-size: 14px;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+        border-top: 1px solid rgba(255,255,255,0.07);
+
+        padding: 30px 20px;
+
+        text-align: center;
+
+        color: #555;
+
+        font-size: 13px;
+    }
+
+    footer strong {
+        color: #888;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 650px) {
 
         nav {
-            display: flex;
-            gap: 25px;
+            padding: 0 20px;
         }
 
-        nav a {
-            color: #aaa;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
+        .nav-links {
+            display: none;
         }
-
-        nav a:hover {
-            color: white;
-        }
-
-        /* =========================
-           HERO
-        ========================= */
 
         .hero {
-            min-height: 520px;
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-
-            text-align: center;
-
-            padding: 80px 20px;
-        }
-
-        .hero-icon {
-            font-size: 75px;
-            margin-bottom: 20px;
-
-            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5));
+            min-height: 480px;
+            padding-top: 70px;
         }
 
         .hero h1 {
-            font-size: clamp(45px, 8vw, 85px);
-            font-weight: 900;
             letter-spacing: -3px;
-
-            margin-bottom: 15px;
-        }
-
-        .hero h1 span {
-            color: #8f8fff;
         }
 
         .hero p {
-            color: #aaa;
-            font-size: 20px;
-            margin-bottom: 35px;
+            font-size: 16px;
         }
 
-        .hero-button {
-            display: inline-block;
-
-            padding: 16px 32px;
-
-            border-radius: 10px;
-
-            background: white;
-            color: black;
-
-            text-decoration: none;
-            font-weight: 900;
-            font-size: 17px;
-
-            transition: 0.2s;
+        .games-section {
+            padding-left: 18px;
+            padding-right: 18px;
         }
-
-        .hero-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 35px rgba(255,255,255,0.15);
-        }
-
-        /* =========================
-           GAMES
-        ========================= */
-
-        .games {
-            max-width: 1150px;
-            margin: auto;
-
-            padding: 60px 25px;
-        }
-
-        .section-title {
-            font-size: 36px;
-            margin-bottom: 30px;
-        }
-
-        .game-grid {
-            display: grid;
-
-            grid-template-columns:
-                repeat(auto-fit, minmax(280px, 1fr));
-
-            gap: 25px;
-        }
-
-        /* =========================
-           GAME CARD
-        ========================= */
-
-        .game-card {
-            overflow: hidden;
-
-            background: rgba(22, 22, 35, 0.9);
-
-            border: 1px solid #303047;
-            border-radius: 18px;
-
-            transition:
-                transform 0.25s,
-                border-color 0.25s,
-                box-shadow 0.25s;
-        }
-
-        .game-card:hover {
-            transform: translateY(-8px);
-
-            border-color: #6666a0;
-
-            box-shadow:
-                0 20px 50px rgba(0,0,0,0.35);
-        }
-
-        .game-banner {
-            height: 190px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: 75px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #202040,
-                    #12121e
-                );
-
-            border-bottom: 1px solid #303047;
-        }
-
-        .game-info {
-            padding: 25px;
-        }
-
-        .game-info h3 {
-            font-size: 25px;
-            margin-bottom: 10px;
-        }
-
-        .game-info p {
-            color: #999;
-            line-height: 1.5;
-
-            margin-bottom: 22px;
-        }
-
-        .play-button {
-            display: inline-block;
-
-            padding: 12px 22px;
-
-            border-radius: 8px;
-
-            background: white;
-            color: black;
-
-            text-decoration: none;
-
-            font-weight: 900;
-
-            transition: 0.2s;
-        }
-
-        .play-button:hover {
-            background: #ddd;
-            transform: translateY(-2px);
-        }
-
-        .coming-soon {
-            background: #29293a;
-            color: #888;
-
-            cursor: default;
-        }
-
-        .coming-soon:hover {
-            background: #29293a;
-            transform: none;
-        }
-
-        /* =========================
-           ABOUT
-        ========================= */
-
-        .about {
-            max-width: 900px;
-            margin: auto;
-
-            padding: 80px 25px;
-
-            text-align: center;
-        }
-
-        .about h2 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-
-        .about p {
-            color: #999;
-            font-size: 18px;
-            line-height: 1.7;
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
-
-        footer {
-            margin-top: 50px;
-
-            padding: 40px 20px;
-
-            text-align: center;
-
-            border-top: 1px solid #222235;
-
-            color: #666;
-        }
-
-        /* =========================
-           MOBILE
-        ========================= */
-
-        @media (max-width: 650px) {
-
-            header {
-                padding: 18px 20px;
-            }
-
-            nav {
-                gap: 12px;
-            }
-
-            nav a {
-                font-size: 13px;
-            }
-
-            .hero {
-                min-height: 450px;
-            }
-
-            .hero h1 {
-                letter-spacing: -2px;
-            }
-
-            .hero p {
-                font-size: 17px;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 
 <body>
 
-    <!-- =========================
-         HEADER
-    ========================= -->
+<!-- =========================
+     NAVIGATION
+========================= -->
 
-    <header>
+<nav>
 
-        <div class="logo">
-            🎮 EPIC MASTER GAMES
-        </div>
+    <div class="logo">
+        EPIC <span>MASTER</span> GAMES
+    </div>
 
-        <nav>
-            <a href="#games">Games</a>
-            <a href="#about">About</a>
-        </nav>
+    <div class="nav-links">
+        <a href="#games">GAMES</a>
+        <a href="#about">ABOUT</a>
+    </div>
 
-    </header>
+</nav>
 
 
-    <!-- =========================
-         HERO
-    ========================= -->
+<!-- =========================
+     HERO
+========================= -->
 
-    <section class="hero">
+<section class="hero">
 
-        <div class="hero-icon">
-            🎮
-        </div>
+    <div class="hero-badge">
+        WELCOME TO EPIC MASTER GAMES
+    </div>
 
-        <h1>
-            EPIC MASTER <span>GAMES</span>
-        </h1>
+    <h1>
+        PLAY.<br>
+        CREATE.<br>
+        REPEAT.
+    </h1>
+
+    <p>
+        A collection of original browser games made by Epic Master.
+        Jump in, play something fun, and see what gets created next.
+    </p>
+
+    <a href="#games" class="hero-button">
+        EXPLORE GAMES ↓
+    </a>
+
+</section>
+
+
+<!-- =========================
+     GAMES
+========================= -->
+
+<section class="games-section" id="games">
+
+    <div class="section-header">
+
+        <h2>🎮 Games</h2>
 
         <p>
-            Small games. Big fun.
+            Play the games currently available on Epic Master Games.
         </p>
 
-        <a class="hero-button" href="#games">
-            EXPLORE GAMES
-        </a>
-
-    </section>
+    </div>
 
 
-    <!-- =========================
-         GAMES
-    ========================= -->
-
-    <section class="games" id="games">
-
-        <h2 class="section-title">
-            Featured Games
-        </h2>
+    <div class="games-grid">
 
 
-        <div class="game-grid">
+        <!-- =========================
+             HARPOONS 'N BALLOONS
+        ========================= -->
 
+        <div class="game-card">
 
-            <!-- HARPOONS 'N BALLOONS -->
+            <div class="game-art">
 
-            <div class="game-card">
+                <div class="small-balloon one"></div>
+                <div class="small-balloon two"></div>
 
-                <div class="game-banner">
-                    🔱🎈
-                </div>
+                <div class="balloon"></div>
 
-                <div class="game-info">
-
-                    <h3>
-                        Harpoons 'n Balloons!
-                    </h3>
-
-                    <p>
-                        A fast-paced arcade game where
-                        you pop bouncing balloons with your
-                        harpoon and chase the highest score.
-                    </p>
-
-                    <!-- THIS CONNECTS TO THE GAME -->
-
-                    <a
-                        class="play-button"
-                        href="games/harpoons-n-balloons/"
-                    >
-                        PLAY NOW
-                    </a>
-
+                <div class="harpoon">
+                    <div class="harpoon-tip"></div>
                 </div>
 
             </div>
 
 
-            <!-- MORE GAMES -->
+            <div class="game-content">
 
-            <div class="game-card">
-
-                <div class="game-banner">
-                    🎮
+                <div class="game-tag">
+                    ARCADE • ACTION
                 </div>
 
-                <div class="game-info">
+                <h3>
+                    Harpoons 'n Balloons!
+                </h3>
 
-                    <h3>
-                        More Games
-                    </h3>
+                <p>
+                    Pop bouncing balloons, fire your harpoon,
+                    survive the chaos, and chase the highest score!
+                </p>
 
-                    <p>
-                        More games are currently being
-                        created. Check back soon!
-                    </p>
+                <a
+                    href="games/harpoons-n-balloons/"
+                    class="play-button"
+                >
+                    PLAY NOW →
+                </a>
 
-                    <span class="play-button coming-soon">
-                        COMING SOON
-                    </span>
+            </div>
 
+        </div>
+
+
+        <!-- =========================
+             VOID RUNNERZ
+        ========================= -->
+
+        <div class="game-card">
+
+            <div class="game-art"
+                 style="
+                    background:
+                    radial-gradient(
+                        circle at center,
+                        rgba(0,150,255,0.25),
+                        transparent 60%
+                    ),
+                    linear-gradient(
+                        135deg,
+                        #07101f,
+                        #08080d
+                    );
+                 ">
+
+                <div style="
+                    font-size:65px;
+                    filter:drop-shadow(0 0 20px #22d3ee);
+                    animation: floatBalloon 3s ease-in-out infinite;
+                ">
+                    🚀
                 </div>
 
             </div>
 
 
+            <div class="game-content">
+
+                <div class="game-tag">
+                    SPACE • ARCADE
+                </div>
+
+                <h3>
+                    Void Runnerz
+                </h3>
+
+                <p>
+                    Blast through the void, dodge enemies,
+                    collect powerups, and survive as long as possible.
+                </p>
+
+                <a
+                    href="games/void-runnerz/"
+                    class="play-button"
+                >
+                    PLAY NOW →
+                </a>
+
+            </div>
+
         </div>
 
-    </section>
+
+        <!-- =========================
+             COMING SOON
+        ========================= -->
+
+        <div class="coming-soon">
+
+            <div class="coming-soon-icon">
+                ✨
+            </div>
+
+            <h3>
+                More Games Coming Soon
+            </h3>
+
+            <p>
+                Something epic is being created...
+            </p>
+
+        </div>
 
 
-    <!-- =========================
-         ABOUT
-    ========================= -->
+    </div>
 
-    <section class="about" id="about">
-
-        <h2>
-            About Epic Master Games
-        </h2>
-
-        <p>
-            Epic Master Games is a collection of
-            original games created for the web.
-            From quick arcade games to bigger
-            projects, this is where they all live.
-        </p>
-
-    </section>
+</section>
 
 
-    <!-- =========================
-         FOOTER
-    ========================= -->
+<!-- =========================
+     ABOUT
+========================= -->
 
-    <footer>
+<section
+    id="about"
+    style="
+        max-width:850px;
+        margin:0 auto;
+        padding:30px 25px 100px;
+        text-align:center;
+    "
+>
 
-        © 2026 Epic Master Games
+    <h2
+        style="
+            font-size:30px;
+            margin-bottom:15px;
+        "
+    >
+        About Epic Master Games
+    </h2>
 
-    </footer>
+    <p
+        style="
+            color:#777;
+            line-height:1.8;
+            font-size:15px;
+        "
+    >
+        Epic Master Games is a collection of fun,
+        experimental and original browser games.
+        New games, ideas and updates are always on the way.
+    </p>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <strong>EPIC MASTER GAMES</strong>
+
+    <br><br>
+
+    Made with HTML, CSS & JavaScript.
+
+    <br><br>
+
+    © 2026 Epic Master Games
+
+</footer>
 
 </body>
 </html>
-```
