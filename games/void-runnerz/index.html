@@ -1,1 +1,2870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Void Runnerz</title>
 
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #02030a;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    touch-action: none;
+}
+
+#game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 120%, rgba(40, 70, 160, .22), transparent 42%),
+        radial-gradient(circle at 15% 25%, rgba(100, 20, 170, .14), transparent 32%),
+        radial-gradient(circle at 85% 45%, rgba(0, 120, 190, .12), transparent 30%),
+        linear-gradient(180deg, #02030c 0%, #050817 50%, #02030a 100%);
+}
+
+#nebula1,
+#nebula2,
+#nebula3 {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(60px);
+}
+
+#nebula1 {
+    width: 55vw;
+    height: 35vw;
+    left: -15vw;
+    top: 10vh;
+    background: rgba(80, 20, 180, .12);
+}
+
+#nebula2 {
+    width: 50vw;
+    height: 30vw;
+    right: -15vw;
+    top: 35vh;
+    background: rgba(0, 120, 200, .10);
+}
+
+#nebula3 {
+    width: 40vw;
+    height: 25vw;
+    left: 30vw;
+    bottom: -10vw;
+    background: rgba(150, 20, 80, .09);
+}
+
+.star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    pointer-events: none;
+    animation: starTwinkle 2s infinite alternate;
+}
+
+@keyframes starTwinkle {
+    from { opacity: .15; }
+    to { opacity: .9; }
+}
+
+#scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .055;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        #fff 4px
+    );
+}
+
+/* =========================
+   HUD
+========================= */
+
+#hud {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.hudBox {
+    min-width: 125px;
+    padding: 10px 15px;
+    border: 1px solid rgba(120, 180, 255, .22);
+    border-radius: 10px;
+    background: rgba(4, 8, 25, .72);
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 0 20px rgba(0, 100, 255, .08),
+        inset 0 0 20px rgba(80, 100, 255, .035);
+}
+
+.hudLabel {
+    color: #697594;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 3px;
+}
+
+.hudValue {
+    color: white;
+    font-size: 21px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+#lives {
+    letter-spacing: 4px;
+}
+
+#powerHUD {
+    position: absolute;
+    top: 88px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.powerStatus {
+    display: none;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.2);
+    background: rgba(5, 10, 28, .8);
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    backdrop-filter: blur(8px);
+}
+
+/* =========================
+   FREEZE TIMER
+========================= */
+
+#freezeTimer {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: none;
+
+    padding: 9px 18px;
+
+    border-radius: 10px;
+
+    border: 1px solid rgba(80, 230, 255, .55);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20, 70, 100, .85),
+            rgba(3, 18, 35, .9)
+        );
+
+    color: #b9f7ff;
+
+    font-size: 14px;
+    font-weight: 1000;
+
+    letter-spacing: 2px;
+
+    box-shadow:
+        0 0 12px rgba(0, 220, 255, .35),
+        0 0 30px rgba(0, 180, 255, .15);
+
+    text-shadow:
+        0 0 8px #35eaff;
+}
+
+.freezeNumber {
+    color: white;
+    font-size: 20px;
+}
+
+/* =========================
+   PLAYER
+========================= */
+
+#player {
+    position: absolute;
+    width: 76px;
+    height: 88px;
+    bottom: 65px;
+    left: 50%;
+    z-index: 20;
+    filter: drop-shadow(0 0 12px rgba(0, 180, 255, .55));
+}
+
+.shipGlow {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    left: -7px;
+    top: 4px;
+    border-radius: 50%;
+    background: rgba(0, 170, 255, .16);
+    filter: blur(17px);
+}
+
+.shipWingLeft,
+.shipWingRight {
+    position: absolute;
+    top: 35px;
+    width: 28px;
+    height: 36px;
+    background: linear-gradient(145deg, #26344e, #101827);
+    border: 1px solid #536987;
+    transform: skewY(-18deg);
+}
+
+.shipWingLeft {
+    left: 0;
+    border-radius: 5px 2px 8px 12px;
+}
+
+.shipWingRight {
+    right: 0;
+    transform: skewY(18deg);
+    border-radius: 2px 5px 12px 8px;
+}
+
+.shipBody {
+    position: absolute;
+    left: 17px;
+    top: 9px;
+    width: 42px;
+    height: 68px;
+    clip-path: polygon(50% 0%, 82% 35%, 100% 100%, 50% 82%, 0% 100%, 18% 35%);
+    background: linear-gradient(
+        90deg,
+        #1a263b,
+        #8197b5 45%,
+        #273650
+    );
+    border: 1px solid #b4c9df;
+}
+
+.shipCockpit {
+    position: absolute;
+    left: 27px;
+    top: 22px;
+    width: 22px;
+    height: 25px;
+    border-radius: 50% 50% 40% 40%;
+    background:
+        linear-gradient(135deg, #d9fbff, #2184bd 45%, #051b36);
+    border: 2px solid #8edaff;
+    box-shadow:
+        inset 0 0 10px #9cecff,
+        0 0 10px rgba(0, 180, 255, .5);
+}
+
+.engine {
+    position: absolute;
+    bottom: 5px;
+    width: 12px;
+    height: 20px;
+    border-radius: 50%;
+    background: #70e8ff;
+    box-shadow:
+        0 0 8px #00c8ff,
+        0 0 18px rgba(0, 190, 255, .8);
+    animation: enginePulse .13s infinite alternate;
+}
+
+.engine.left {
+    left: 16px;
+}
+
+.engine.right {
+    right: 16px;
+}
+
+@keyframes enginePulse {
+    from { transform: scaleY(.7); opacity: .65; }
+    to { transform: scaleY(1.25); opacity: 1; }
+}
+
+.invincible {
+    animation: playerFlash .13s steps(2, end) infinite;
+}
+
+@keyframes playerFlash {
+    0% { opacity: 1; }
+    50% { opacity: .08; }
+    100% { opacity: 1; }
+}
+
+/* SHIELD */
+
+#shieldBubble {
+    position: absolute;
+    width: 112px;
+    height: 112px;
+    left: -18px;
+    top: -12px;
+    border-radius: 50%;
+    border: 3px solid rgba(60, 220, 255, .8);
+    background: radial-gradient(
+        circle,
+        rgba(0, 210, 255, .08),
+        rgba(0, 100, 255, .03) 55%,
+        transparent 70%
+    );
+    box-shadow:
+        0 0 12px #00d9ff,
+        0 0 30px rgba(0, 210, 255, .65),
+        inset 0 0 20px rgba(0, 220, 255, .18);
+    display: none;
+    pointer-events: none;
+    animation: shieldPulse 1s infinite alternate;
+}
+
+@keyframes shieldPulse {
+    from { transform: scale(.96); opacity: .7; }
+    to { transform: scale(1.04); opacity: 1; }
+}
+
+#player.hasShield #shieldBubble {
+    display: block;
+}
+
+/* =========================
+   LASER
+========================= */
+
+.laser {
+    position: absolute;
+    width: 5px;
+    height: 38px;
+    border-radius: 10px;
+    background: #ff263f;
+    box-shadow:
+        0 0 5px #ff263f,
+        0 0 13px #ff263f,
+        0 0 25px rgba(255, 0, 50, .8);
+    z-index: 15;
+}
+
+.laser::after {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 0;
+    width: 15px;
+    height: 38px;
+    background: rgba(255, 20, 50, .17);
+    filter: blur(5px);
+}
+
+/* =========================
+   ENEMIES
+========================= */
+
+.enemy {
+    position: absolute;
+    width: 76px;
+    height: 76px;
+    z-index: 10;
+    filter: drop-shadow(0 0 16px rgba(255, 30, 70, .6));
+    transition: filter .2s;
+}
+
+/* Frozen enemies become blue */
+
+.enemy.frozenEnemy {
+    filter:
+        drop-shadow(0 0 16px rgba(60, 220, 255, .9))
+        drop-shadow(0 0 35px rgba(30, 170, 255, .45));
+}
+
+.enemy.frozenEnemy .enemyCore {
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #d9ffff 0%,
+            #3eeaff 25%,
+            #0874a0 60%,
+            #032437 100%
+        );
+
+    border-color: #75edff;
+
+    box-shadow:
+        inset 0 0 15px rgba(255,255,255,.3),
+        0 0 14px #00d9ff,
+        0 0 32px rgba(0,210,255,.65);
+}
+
+.enemy.frozenEnemy .enemyRing {
+    border-color: rgba(90, 230, 255, .8);
+    animation-play-state: paused;
+}
+
+.enemy.frozenEnemy .enemyEye {
+    box-shadow:
+        0 0 9px white,
+        0 0 17px #00d9ff;
+}
+
+.enemyCore {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    left: 14px;
+    top: 14px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 30%, #ffb5bd 0%, #ff3b50 20%, #a10021 55%, #30000d 100%);
+    border: 3px solid #ff6576;
+    box-shadow:
+        inset 0 0 15px rgba(255, 255, 255, .18),
+        0 0 14px #ff173c,
+        0 0 32px rgba(255, 0, 40, .5);
+}
+
+.enemyRing {
+    position: absolute;
+    inset: 5px;
+    border: 2px solid rgba(255, 70, 90, .45);
+    border-radius: 50%;
+    animation: enemySpin .8s linear infinite;
+}
+
+.enemyRing::before,
+.enemyRing::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff304c;
+    box-shadow: 0 0 11px #ff304c;
+}
+
+.enemyRing::before {
+    top: -6px;
+    left: 28px;
+}
+
+.enemyRing::after {
+    bottom: -6px;
+    left: 28px;
+}
+
+.enemyEye {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    left: 32px;
+    top: 32px;
+    border-radius: 50%;
+    background: white;
+    box-shadow:
+        0 0 9px white,
+        0 0 17px #ff173c;
+}
+
+@keyframes enemySpin {
+    to { transform: rotate(360deg); }
+}
+
+/* =========================
+   POWERUPS
+========================= */
+
+.powerup {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    z-index: 18;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    font-weight: 900;
+    color: white;
+    border: 2px solid rgba(255,255,255,.65);
+    box-shadow:
+        0 0 12px currentColor,
+        0 0 28px rgba(255,255,255,.2);
+    animation: powerFloat .7s infinite alternate;
+}
+
+@keyframes powerFloat {
+    from { transform: translateY(-3px) rotate(-2deg); }
+    to { transform: translateY(3px) rotate(2deg); }
+}
+
+.powerup.shield {
+    color: #35e7ff;
+    background:
+        radial-gradient(circle, #75f4ff, #007fa5 50%, #003344);
+}
+
+.powerup.health {
+    color: #53ff75;
+    background:
+        radial-gradient(circle, #aaffb8, #168f35 50%, #063e16);
+}
+
+.powerup.tnt {
+    color: #ff4050;
+    background:
+        radial-gradient(circle, #ff8a91, #a00019 50%, #39000a);
+}
+
+.powerup.auto {
+    color: #ffd43b;
+    background:
+        radial-gradient(circle, #fff2a0, #c58b00 50%, #4b3200);
+}
+
+/* =========================
+   FREEZE PICKUP
+========================= */
+
+.freezePowerup {
+    position: absolute;
+    width: 58px;
+    height: 58px;
+    z-index: 18;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 29px;
+
+    color: #baf8ff;
+
+    background:
+        radial-gradient(
+            circle,
+            #dfffff 0%,
+            #4bdfff 25%,
+            #087ba7 58%,
+            #03283c 100%
+        );
+
+    border: 3px solid #8ff4ff;
+
+    box-shadow:
+        0 0 12px #20dcff,
+        0 0 28px #00aee8,
+        0 0 50px rgba(0,200,255,.45);
+
+    animation:
+        freezeFloat .6s infinite alternate,
+        freezeGlow 1s infinite alternate;
+}
+
+@keyframes freezeFloat {
+    from {
+        transform: translateY(-4px) rotate(-3deg);
+    }
+
+    to {
+        transform: translateY(4px) rotate(3deg);
+    }
+}
+
+@keyframes freezeGlow {
+    from {
+        box-shadow:
+            0 0 10px #20dcff,
+            0 0 22px #00aee8;
+    }
+
+    to {
+        box-shadow:
+            0 0 18px #20dcff,
+            0 0 45px #00cfff,
+            0 0 65px rgba(0,220,255,.45);
+    }
+}
+
+/* =========================
+   EXPLOSIONS
+========================= */
+
+.explosion {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+        0 0 8px #fff,
+        0 0 20px #ff334f,
+        0 0 40px #ff0033;
+    z-index: 30;
+    pointer-events: none;
+    animation: explode .35s ease-out forwards;
+}
+
+.bigExplosion {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: white;
+    box-shadow:
+        0 0 15px white,
+        0 0 40px #ff263f,
+        0 0 90px #ff002f;
+    z-index: 40;
+    pointer-events: none;
+    animation: bigExplode .65s ease-out forwards;
+}
+
+@keyframes explode {
+    0% {
+        transform: scale(.3);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(7);
+        opacity: 0;
+    }
+}
+
+@keyframes bigExplode {
+    0% {
+        transform: scale(.2);
+        opacity: 1;
+    }
+
+    35% {
+        transform: scale(3);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(10);
+        opacity: 0;
+    }
+}
+
+.particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ff5267;
+    box-shadow: 0 0 8px #ff5267;
+    pointer-events: none;
+    z-index: 29;
+}
+
+/* =========================
+   MOBILE CONTROLS
+========================= */
+
+#mobileControls {
+    position: absolute;
+    bottom: 22px;
+    left: 0;
+    right: 0;
+    display: none;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+}
+
+.controlGroup {
+    display: flex;
+    gap: 12px;
+}
+
+.mobileButton {
+    width: 65px;
+    height: 65px;
+    border-radius: 17px;
+    border: 1px solid rgba(160, 200, 255, .35);
+    background: rgba(10, 20, 45, .75);
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.35),
+        inset 0 0 15px rgba(100,150,255,.07);
+    backdrop-filter: blur(8px);
+    touch-action: none;
+}
+
+.mobileButton:active {
+    transform: scale(.92);
+    background: rgba(40, 70, 120, .9);
+}
+
+#shootButton {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    font-size: 24px;
+    border-color: rgba(255, 70, 90, .5);
+}
+
+/* =========================
+   SCREENS
+========================= */
+
+.screen {
+    position: absolute;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background:
+        radial-gradient(circle, rgba(15, 35, 75, .55), rgba(1, 3, 10, .94) 65%);
+    backdrop-filter: blur(7px);
+}
+
+.panel {
+    width: min(560px, 90%);
+    padding: 48px 35px;
+    border: 1px solid rgba(100, 160, 255, .2);
+    border-radius: 22px;
+    background: rgba(5, 9, 25, .75);
+    box-shadow:
+        0 30px 100px rgba(0,0,0,.65),
+        inset 0 0 50px rgba(80,100,255,.035);
+}
+
+.logo {
+    font-size: clamp(42px, 8vw, 78px);
+    font-weight: 1000;
+    letter-spacing: -4px;
+    color: white;
+    text-shadow:
+        0 0 10px rgba(100, 200, 255, .8),
+        0 0 35px rgba(30, 100, 255, .35);
+}
+
+.logo span {
+    color: #ff304c;
+    text-shadow:
+        0 0 10px #ff304c,
+        0 0 30px rgba(255, 30, 60, .5);
+}
+
+.subtitle {
+    margin-top: 8px;
+    color: #7583a6;
+    letter-spacing: 5px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.description {
+    color: #b3bdd3;
+    margin-top: 25px;
+    line-height: 1.7;
+    font-size: 14px;
+}
+
+.startButton {
+    margin-top: 30px;
+    padding: 15px 38px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ff304c, #c7002d);
+    color: white;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow:
+        0 8px 30px rgba(255, 20, 50, .25),
+        inset 0 1px rgba(255,255,255,.25);
+}
+
+.startButton:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 35px rgba(255, 20, 50, .38);
+}
+
+.controlsInfo {
+    margin-top: 20px;
+    color: #65708d;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+#gameOver {
+    display: none;
+}
+
+.finalScore {
+    margin-top: 15px;
+    color: #8996b6;
+    font-size: 14px;
+}
+
+.finalScore strong {
+    display: block;
+    color: white;
+    font-size: 42px;
+    margin-top: 4px;
+}
+
+#damageFlash {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    pointer-events: none;
+    background: rgba(255, 20, 40, .18);
+    opacity: 0;
+}
+
+.damageFlash {
+    animation: damage .25s ease-out;
+}
+
+@keyframes damage {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+#autoFlash {
+    position: absolute;
+    inset: 0;
+    z-index: 70;
+    pointer-events: none;
+    border: 4px solid rgba(255, 210, 40, .55);
+    box-shadow: inset 0 0 35px rgba(255, 200, 20, .12);
+    display: none;
+}
+
+.autoActive {
+    display: block !important;
+    animation: autoPulse .4s infinite alternate;
+}
+
+@keyframes autoPulse {
+    from { opacity: .35; }
+    to { opacity: .8; }
+}
+
+/* Desktop */
+
+@media (min-width: 700px) {
+
+    #mobileControls {
+        display: none !important;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 699px) {
+
+    #mobileControls {
+        display: flex;
+    }
+
+    #hud {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+    }
+
+    .hudBox {
+        min-width: 100px;
+        padding: 8px 11px;
+    }
+
+    .hudValue {
+        font-size: 17px;
+    }
+
+    #player {
+        transform: scale(.9);
+    }
+
+    #powerHUD {
+        top: 73px;
+    }
+
+    #freezeTimer {
+        top: 105px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div id="nebula1"></div>
+    <div id="nebula2"></div>
+    <div id="nebula3"></div>
+
+    <div id="stars"></div>
+    <div id="scanlines"></div>
+
+    <div id="hud">
+
+        <div class="hudBox">
+            <div class="hudLabel">SCORE</div>
+            <div class="hudValue" id="score">000000</div>
+        </div>
+
+        <div class="hudBox">
+            <div class="hudLabel">LIVES</div>
+            <div class="hudValue" id="lives">♥ ♥ ♥</div>
+        </div>
+
+    </div>
+
+    <div id="powerHUD">
+
+        <div class="powerStatus" id="shieldStatus">
+            🛡 SHIELD
+        </div>
+
+        <div class="powerStatus" id="autoStatus">
+            ⚡ AUTO <span id="autoTime">10</span>s
+        </div>
+
+    </div>
+
+    <!-- FREEZE TIMER -->
+
+    <div id="freezeTimer">
+        ❄ FREEZE
+        <span class="freezeNumber" id="freezeTime">5</span>
+    </div>
+
+    <div id="player">
+
+        <div id="shieldBubble"></div>
+
+        <div class="shipGlow"></div>
+        <div class="shipWingLeft"></div>
+        <div class="shipWingRight"></div>
+        <div class="shipBody"></div>
+        <div class="shipCockpit"></div>
+        <div class="engine left"></div>
+        <div class="engine right"></div>
+
+    </div>
+
+    <div id="mobileControls">
+
+        <div class="controlGroup">
+
+            <button class="mobileButton" id="leftButton">
+                ◀
+            </button>
+
+            <button class="mobileButton" id="rightButton">
+                ▶
+            </button>
+
+        </div>
+
+        <button class="mobileButton" id="shootButton">
+            🔴
+        </button>
+
+    </div>
+
+    <div id="damageFlash"></div>
+    <div id="autoFlash"></div>
+
+    <div class="screen" id="startScreen">
+
+        <div class="panel">
+
+            <div class="logo">
+                VOID <span>RUNNERZ</span>
+            </div>
+
+            <div class="subtitle">
+                SURVIVE THE VOID
+            </div>
+
+            <div class="description">
+                Enemy craft are entering your sector.<br>
+                Destroy them. Stay alive. Keep moving.
+            </div>
+
+            <button class="startButton" id="startButton">
+                START GAME
+            </button>
+
+            <div class="controlsInfo">
+                A / D or ARROW KEYS · SPACE TO FIRE
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="screen" id="gameOver">
+
+        <div class="panel">
+
+            <div class="logo">
+                VOID <span>LOST</span>
+            </div>
+
+            <div class="subtitle">
+                MISSION TERMINATED
+            </div>
+
+            <div class="finalScore">
+                FINAL SCORE
+                <strong id="finalScore">0</strong>
+            </div>
+
+            <button class="startButton" id="restartButton">
+                PLAY AGAIN
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+
+const scoreDisplay =
+    document.getElementById("score");
+
+const livesDisplay =
+    document.getElementById("lives");
+
+const startScreen =
+    document.getElementById("startScreen");
+
+const gameOverScreen =
+    document.getElementById("gameOver");
+
+const startButton =
+    document.getElementById("startButton");
+
+const restartButton =
+    document.getElementById("restartButton");
+
+const finalScore =
+    document.getElementById("finalScore");
+
+const leftButton =
+    document.getElementById("leftButton");
+
+const rightButton =
+    document.getElementById("rightButton");
+
+const shootButton =
+    document.getElementById("shootButton");
+
+const damageFlash =
+    document.getElementById("damageFlash");
+
+const autoFlash =
+    document.getElementById("autoFlash");
+
+const shieldStatus =
+    document.getElementById("shieldStatus");
+
+const autoStatus =
+    document.getElementById("autoStatus");
+
+const autoTime =
+    document.getElementById("autoTime");
+
+const freezeTimer =
+    document.getElementById("freezeTimer");
+
+const freezeTime =
+    document.getElementById("freezeTime");
+
+
+let playerX = 0;
+
+let score = 0;
+let lives = 3;
+
+let gameRunning = false;
+let invincible = false;
+
+
+/* =========================
+   POWERUPS
+========================= */
+
+let shieldActive = false;
+let autoFireActive = false;
+
+
+/* =========================
+   FREEZE SYSTEM
+========================= */
+
+let enemiesFrozen = false;
+let freezeCountdown = 0;
+
+let freezeInterval = null;
+
+
+/* =========================
+   AUTO FIRE
+========================= */
+
+let autoFireTimer = null;
+let autoFireInterval = null;
+
+
+/* =========================
+   ARRAYS
+========================= */
+
+let lasers = [];
+let enemies = [];
+let powerups = [];
+
+
+/* =========================
+   CONTROLS
+========================= */
+
+let keys = {
+    left: false,
+    right: false
+};
+
+let fireHeld = false;
+
+
+/* =========================
+   TIMERS
+========================= */
+
+let enemyTimer = 0;
+let powerupTimer = 0;
+
+let lastTime = 0;
+
+
+/* =========================
+   STARS
+========================= */
+
+function createStars() {
+
+    const container =
+        document.getElementById("stars");
+
+    for (let i = 0; i < 130; i++) {
+
+        const star =
+            document.createElement("div");
+
+        star.className = "star";
+
+        const size =
+            Math.random() * 2.5 + .5;
+
+        star.style.width =
+            size + "px";
+
+        star.style.height =
+            size + "px";
+
+        star.style.left =
+            Math.random() * 100 + "%";
+
+        star.style.top =
+            Math.random() * 100 + "%";
+
+        star.style.animationDelay =
+            Math.random() * 2 + "s";
+
+        container.appendChild(star);
+    }
+}
+
+
+/* =========================
+   PLAYER
+========================= */
+
+function resetPlayer() {
+
+    playerX =
+        game.clientWidth / 2 -
+        player.offsetWidth / 2;
+
+    player.style.left =
+        playerX + "px";
+
+    player.style.bottom =
+        "65px";
+}
+
+
+function respawnPlayer() {
+
+    playerX =
+        game.clientWidth / 2 -
+        player.offsetWidth / 2;
+
+    player.style.left =
+        playerX + "px";
+
+    player.style.bottom =
+        "65px";
+
+    invincible = true;
+
+    player.classList.add("invincible");
+
+    setTimeout(() => {
+
+        invincible = false;
+
+        player.classList.remove(
+            "invincible"
+        );
+
+        player.style.opacity = "1";
+
+    }, 2500);
+}
+
+
+/* =========================
+   GAME START
+========================= */
+
+function startGame() {
+
+    score = 0;
+    lives = 3;
+
+    lasers = [];
+    enemies = [];
+    powerups = [];
+
+    shieldActive = false;
+    autoFireActive = false;
+
+    enemiesFrozen = false;
+    freezeCountdown = 0;
+
+    fireHeld = false;
+
+    clearInterval(autoFireInterval);
+    clearTimeout(autoFireTimer);
+    clearInterval(freezeInterval);
+
+    player.classList.remove(
+        "hasShield"
+    );
+
+    shieldStatus.style.display =
+        "none";
+
+    autoStatus.style.display =
+        "none";
+
+    autoFlash.classList.remove(
+        "autoActive"
+    );
+
+    freezeTimer.style.display =
+        "none";
+
+
+    document
+        .querySelectorAll(".laser")
+        .forEach(e => e.remove());
+
+    document
+        .querySelectorAll(".enemy")
+        .forEach(e => e.remove());
+
+    document
+        .querySelectorAll(".powerup")
+        .forEach(e => e.remove());
+
+    document
+        .querySelectorAll(".freezePowerup")
+        .forEach(e => e.remove());
+
+    document
+        .querySelectorAll(".explosion")
+        .forEach(e => e.remove());
+
+    document
+        .querySelectorAll(".bigExplosion")
+        .forEach(e => e.remove());
+
+    document
+        .querySelectorAll(".particle")
+        .forEach(e => e.remove());
+
+
+    scoreDisplay.textContent =
+        score
+            .toString()
+            .padStart(6, "0");
+
+    livesDisplay.textContent =
+        "♥ ♥ ♥";
+
+
+    startScreen.style.display =
+        "none";
+
+    gameOverScreen.style.display =
+        "none";
+
+
+    gameRunning = true;
+
+    resetPlayer();
+
+    lastTime =
+        performance.now();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function endGame() {
+
+    gameRunning = false;
+
+    clearInterval(
+        autoFireInterval
+    );
+
+    clearTimeout(
+        autoFireTimer
+    );
+
+    clearInterval(
+        freezeInterval
+    );
+
+    autoFireActive = false;
+    enemiesFrozen = false;
+
+    freezeTimer.style.display =
+        "none";
+
+    finalScore.textContent =
+        score.toLocaleString();
+
+    gameOverScreen.style.display =
+        "flex";
+}
+
+
+/* =========================
+   SHOOT
+========================= */
+
+function shoot() {
+
+    if (!gameRunning) return;
+
+    const laser =
+        document.createElement("div");
+
+    laser.className =
+        "laser";
+
+    const playerCenter =
+        playerX +
+        player.offsetWidth / 2;
+
+    laser.style.left =
+        (playerCenter - 2.5) + "px";
+
+    laser.style.top =
+        (game.clientHeight - 155) + "px";
+
+    game.appendChild(laser);
+
+    lasers.push({
+
+        element: laser,
+
+        x: playerCenter - 2.5,
+
+        y: game.clientHeight - 155,
+
+        speed:
+            autoFireActive
+                ? 1050
+                : 850
+
+    });
+}
+
+
+/* =========================
+   TRY SHOOT
+========================= */
+
+function tryShoot() {
+
+    if (!gameRunning) return;
+
+
+    if (!autoFireActive) {
+
+        if (fireHeld) return;
+
+        fireHeld = true;
+
+        shoot();
+
+        return;
+    }
+
+
+    if (!fireHeld) {
+
+        fireHeld = true;
+
+        shoot();
+
+        clearInterval(
+            autoFireInterval
+        );
+
+        autoFireInterval =
+            setInterval(() => {
+
+                if (
+                    gameRunning &&
+                    fireHeld &&
+                    autoFireActive
+                ) {
+
+                    shoot();
+                }
+
+            }, 115);
+    }
+}
+
+
+/* =========================
+   RELEASE FIRE
+========================= */
+
+function releaseFire() {
+
+    fireHeld = false;
+
+    clearInterval(
+        autoFireInterval
+    );
+
+    autoFireInterval = null;
+}
+
+
+/* =========================
+   SPAWN ENEMY
+========================= */
+
+function spawnEnemy() {
+
+    if (!gameRunning) return;
+
+    const enemy =
+        document.createElement("div");
+
+    enemy.className =
+        "enemy";
+
+    enemy.innerHTML = `
+        <div class="enemyRing"></div>
+        <div class="enemyCore"></div>
+        <div class="enemyEye"></div>
+    `;
+
+
+    const x =
+        Math.random() *
+        (game.clientWidth - 80);
+
+    const y = -90;
+
+
+    enemy.style.left =
+        x + "px";
+
+    enemy.style.top =
+        y + "px";
+
+    game.appendChild(enemy);
+
+
+    enemies.push({
+
+        element: enemy,
+
+        x: x,
+
+        y: y,
+
+        /*
+            SLOWER ENEMIES
+        */
+
+        speed:
+            55 +
+            Math.random() * 65
+
+    });
+}
+
+
+/* =========================
+   POWERUP SPAWNING
+========================= */
+
+function spawnPowerup() {
+
+    if (!gameRunning) return;
+
+
+    const roll =
+        Math.random();
+
+    let type;
+
+
+    /*
+        TNT remains rare.
+    */
+
+    if (roll < .07) {
+
+        type = "tnt";
+
+    } else if (roll < .38) {
+
+        type = "shield";
+
+    } else if (roll < .69) {
+
+        type = "health";
+
+    } else {
+
+        type = "auto";
+    }
+
+
+    const powerup =
+        document.createElement("div");
+
+    powerup.className =
+        "powerup " + type;
+
+
+    if (type === "shield") {
+        powerup.textContent = "🛡";
+    }
+
+    if (type === "health") {
+        powerup.textContent = "♥";
+    }
+
+    if (type === "tnt") {
+        powerup.textContent = "💣";
+    }
+
+    if (type === "auto") {
+        powerup.textContent = "⚡";
+    }
+
+
+    const x =
+        Math.random() *
+        (game.clientWidth - 60);
+
+    const y = -65;
+
+
+    powerup.style.left =
+        x + "px";
+
+    powerup.style.top =
+        y + "px";
+
+    game.appendChild(powerup);
+
+
+    powerups.push({
+
+        element: powerup,
+
+        type: type,
+
+        x: x,
+
+        y: y,
+
+        speed:
+            75 +
+            Math.random() * 45
+
+    });
+}
+
+
+/* =========================
+   SPAWN FREEZE
+========================= */
+
+function spawnFreeze() {
+
+    if (!gameRunning) return;
+
+
+    const freeze =
+        document.createElement("div");
+
+    freeze.className =
+        "freezePowerup";
+
+    freeze.textContent =
+        "❄";
+
+
+    const x =
+        Math.random() *
+        (game.clientWidth - 65);
+
+    const y = -70;
+
+
+    freeze.style.left =
+        x + "px";
+
+    freeze.style.top =
+        y + "px";
+
+    game.appendChild(freeze);
+
+
+    powerups.push({
+
+        element: freeze,
+
+        type: "freeze",
+
+        x: x,
+
+        y: y,
+
+        speed:
+            65 +
+            Math.random() * 30
+
+    });
+}
+
+
+/* =========================
+   ACTIVATE POWERUP
+========================= */
+
+function collectPowerup(powerup) {
+
+    const type =
+        powerup.type;
+
+
+    powerup.element.remove();
+
+
+    /* SHIELD */
+
+    if (type === "shield") {
+
+        shieldActive = true;
+
+        player.classList.add(
+            "hasShield"
+        );
+
+        shieldStatus.style.display =
+            "block";
+
+        return;
+    }
+
+
+    /* HEALTH */
+
+    if (type === "health") {
+
+        if (lives < 9) {
+
+            lives++;
+
+            livesDisplay.textContent =
+                "♥ ".repeat(
+                    lives
+                ).trim();
+
+        } else {
+
+            score += 500;
+
+            scoreDisplay.textContent =
+                score
+                    .toString()
+                    .padStart(6, "0");
+        }
+
+        return;
+    }
+
+
+    /* TNT */
+
+    if (type === "tnt") {
+
+        const currentEnemies =
+            [...enemies];
+
+
+        currentEnemies.forEach(
+            enemy => {
+
+                explode(
+                    enemy.x + 38,
+                    enemy.y + 38
+                );
+
+                enemy.element.remove();
+
+            }
+        );
+
+
+        enemies = [];
+
+
+        const big =
+            document.createElement("div");
+
+        big.className =
+            "bigExplosion";
+
+        big.style.left =
+            (game.clientWidth / 2 - 15)
+            + "px";
+
+        big.style.top =
+            (game.clientHeight / 2 - 15)
+            + "px";
+
+        game.appendChild(big);
+
+
+        setTimeout(() => {
+
+            big.remove();
+
+        }, 700);
+
+
+        score +=
+            currentEnemies.length * 150;
+
+
+        scoreDisplay.textContent =
+            score
+                .toString()
+                .padStart(6, "0");
+
+        return;
+    }
+
+
+    /* AUTO FIRE */
+
+    if (type === "auto") {
+
+        activateAutoFire();
+
+        return;
+    }
+
+
+    /* FREEZE */
+
+    if (type === "freeze") {
+
+        activateFreeze();
+
+        return;
+    }
+}
+
+
+/* =========================
+   FREEZE ALL ENEMIES
+========================= */
+
+function activateFreeze() {
+
+    /*
+        Reset an existing freeze
+        if another one is collected.
+    */
+
+    clearInterval(
+        freezeInterval
+    );
+
+
+    enemiesFrozen = true;
+
+    freezeCountdown = 5;
+
+
+    freezeTimer.style.display =
+        "block";
+
+    freezeTime.textContent =
+        freezeCountdown;
+
+
+    /*
+        Visually freeze every enemy.
+    */
+
+    enemies.forEach(enemy => {
+
+        enemy.element.classList.add(
+            "frozenEnemy"
+        );
+
+    });
+
+
+    /*
+        Countdown:
+        5 → 4 → 3 → 2 → 1 → 0
+    */
+
+    freezeInterval =
+        setInterval(() => {
+
+            freezeCountdown--;
+
+            freezeTime.textContent =
+                freezeCountdown;
+
+
+            if (freezeCountdown <= 0) {
+
+                clearInterval(
+                    freezeInterval
+                );
+
+                enemiesFrozen = false;
+
+
+                /*
+                    Unfreeze every enemy.
+                */
+
+                enemies.forEach(
+                    enemy => {
+
+                        enemy.element.classList.remove(
+                            "frozenEnemy"
+                        );
+
+                    }
+                );
+
+
+                freezeTimer.style.display =
+                    "none";
+            }
+
+        }, 1000);
+}
+
+
+/* =========================
+   AUTO FIRE
+========================= */
+
+function activateAutoFire() {
+
+    autoFireActive = true;
+
+    autoStatus.style.display =
+        "block";
+
+    autoFlash.classList.add(
+        "autoActive"
+    );
+
+
+    let remaining = 10;
+
+    autoTime.textContent =
+        remaining;
+
+
+    clearInterval(
+        autoFireTimer
+    );
+
+
+    autoFireTimer =
+        setInterval(() => {
+
+            remaining--;
+
+            autoTime.textContent =
+                remaining;
+
+
+            if (remaining <= 0) {
+
+                clearInterval(
+                    autoFireTimer
+                );
+
+                autoFireActive = false;
+
+                autoStatus.style.display =
+                    "none";
+
+                autoFlash.classList.remove(
+                    "autoActive"
+                );
+
+                releaseFire();
+            }
+
+        }, 1000);
+}
+
+
+/* =========================
+   COLLISION
+========================= */
+
+function collision(a, b) {
+
+    return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+    );
+}
+
+
+/* =========================
+   EXPLOSION
+========================= */
+
+function explode(x, y) {
+
+    const explosion =
+        document.createElement("div");
+
+    explosion.className =
+        "explosion";
+
+    explosion.style.left =
+        (x - 7) + "px";
+
+    explosion.style.top =
+        (y - 7) + "px";
+
+    game.appendChild(explosion);
+
+
+    setTimeout(() => {
+
+        explosion.remove();
+
+    }, 400);
+
+
+    for (let i = 0; i < 10; i++) {
+
+        const particle =
+            document.createElement("div");
+
+        particle.className =
+            "particle";
+
+        particle.style.left =
+            x + "px";
+
+        particle.style.top =
+            y + "px";
+
+        game.appendChild(particle);
+
+
+        const angle =
+            Math.random() *
+            Math.PI * 2;
+
+        const distance =
+            25 +
+            Math.random() * 55;
+
+        const tx =
+            Math.cos(angle) *
+            distance;
+
+        const ty =
+            Math.sin(angle) *
+            distance;
+
+
+        particle.animate(
+            [
+                {
+                    transform:
+                        "translate(0,0) scale(1)",
+                    opacity: 1
+                },
+
+                {
+                    transform:
+                        `translate(${tx}px,${ty}px) scale(.1)`,
+                    opacity: 0
+                }
+            ],
+            {
+                duration:
+                    350 +
+                    Math.random() * 300,
+
+                easing:
+                    "ease-out"
+            }
+        );
+
+
+        setTimeout(() => {
+
+            particle.remove();
+
+        }, 700);
+    }
+}
+
+
+/* =========================
+   LOSE LIFE
+========================= */
+
+function loseLife() {
+
+    if (invincible) return;
+
+
+    /*
+        SHIELD ABSORBS HIT
+    */
+
+    if (shieldActive) {
+
+        shieldActive = false;
+
+        player.classList.remove(
+            "hasShield"
+        );
+
+        shieldStatus.style.display =
+            "none";
+
+
+        explode(
+            playerX +
+            player.offsetWidth / 2,
+
+            game.clientHeight -
+            100
+        );
+
+        return;
+    }
+
+
+    lives--;
+
+
+    livesDisplay.textContent =
+        "♥ ".repeat(
+            Math.max(lives, 0)
+        ).trim();
+
+
+    damageFlash.classList.remove(
+        "damageFlash"
+    );
+
+    void damageFlash.offsetWidth;
+
+    damageFlash.classList.add(
+        "damageFlash"
+    );
+
+
+    if (lives <= 0) {
+
+        endGame();
+
+        return;
+    }
+
+
+    respawnPlayer();
+}
+
+
+/* =========================
+   UPDATE
+========================= */
+
+function update(dt) {
+
+    /* =====================
+       PLAYER MOVEMENT
+    ===================== */
+
+    const moveSpeed = 430;
+
+
+    if (keys.left) {
+
+        playerX -=
+            moveSpeed * dt;
+    }
+
+
+    if (keys.right) {
+
+        playerX +=
+            moveSpeed * dt;
+    }
+
+
+    playerX =
+        Math.max(
+            0,
+
+            Math.min(
+                game.clientWidth -
+                player.offsetWidth,
+
+                playerX
+            )
+        );
+
+
+    player.style.left =
+        playerX + "px";
+
+
+    /* =====================
+       ENEMY SPAWNING
+    ===================== */
+
+    enemyTimer += dt;
+
+
+    const spawnRate =
+        Math.max(
+            .42,
+            1.15 -
+            score / 5000
+        );
+
+
+    if (
+        enemyTimer >=
+        spawnRate
+    ) {
+
+        enemyTimer = 0;
+
+        spawnEnemy();
+    }
+
+
+    /* =====================
+       POWERUP SPAWNING
+    ===================== */
+
+    powerupTimer += dt;
+
+
+    if (
+        powerupTimer >=
+        7 + Math.random() * 5
+    ) {
+
+        powerupTimer = 0;
+
+        /*
+            20% chance for a FREEZE
+            instead of a normal powerup.
+        */
+
+        if (Math.random() < .20) {
+
+            spawnFreeze();
+
+        } else {
+
+            spawnPowerup();
+        }
+    }
+
+
+    /* =====================
+       LASERS
+    ===================== */
+
+    for (
+        let i = lasers.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const laser =
+            lasers[i];
+
+
+        laser.y -=
+            laser.speed * dt;
+
+
+        laser.element.style.top =
+            laser.y + "px";
+
+
+        if (laser.y < -60) {
+
+            laser.element.remove();
+
+            lasers.splice(i, 1);
+
+            continue;
+        }
+
+
+        const laserRect = {
+
+            x: laser.x,
+
+            y: laser.y,
+
+            width: 5,
+
+            height: 38
+
+        };
+
+
+        let destroyed = false;
+
+
+        for (
+            let j = enemies.length - 1;
+            j >= 0;
+            j--
+        ) {
+
+            const enemy =
+                enemies[j];
+
+
+            const enemyRect = {
+
+                x: enemy.x,
+
+                y: enemy.y,
+
+                width: 76,
+
+                height: 76
+
+            };
+
+
+            if (
+                collision(
+                    laserRect,
+                    enemyRect
+                )
+            ) {
+
+                explode(
+                    enemy.x + 38,
+                    enemy.y + 38
+                );
+
+
+                enemy.element.remove();
+
+
+                enemies.splice(
+                    j,
+                    1
+                );
+
+
+                laser.element.remove();
+
+
+                lasers.splice(
+                    i,
+                    1
+                );
+
+
+                score += 100;
+
+
+                scoreDisplay.textContent =
+                    score
+                        .toString()
+                        .padStart(
+                            6,
+                            "0"
+                        );
+
+
+                destroyed = true;
+
+                break;
+            }
+        }
+
+
+        if (destroyed) continue;
+    }
+
+
+    /* =====================
+       ENEMIES
+    ===================== */
+
+    for (
+        let i = enemies.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const enemy =
+            enemies[i];
+
+
+        /*
+            FREEZE:
+            Enemy position does not
+            change while frozen.
+        */
+
+        if (!enemiesFrozen) {
+
+            enemy.y +=
+                enemy.speed * dt;
+
+            enemy.element.style.top =
+                enemy.y + "px";
+        }
+
+
+        const playerRect = {
+
+            x: playerX,
+
+            y:
+                game.clientHeight -
+                65 -
+                player.offsetHeight,
+
+            width:
+                player.offsetWidth,
+
+            height:
+                player.offsetHeight
+
+        };
+
+
+        const enemyRect = {
+
+            x: enemy.x,
+
+            y: enemy.y,
+
+            width: 76,
+
+            height: 76
+
+        };
+
+
+        /* HIT PLAYER */
+
+        if (
+            !invincible &&
+            collision(
+                playerRect,
+                enemyRect
+            )
+        ) {
+
+            explode(
+                enemy.x + 38,
+                enemy.y + 38
+            );
+
+
+            enemy.element.remove();
+
+
+            enemies.splice(
+                i,
+                1
+            );
+
+
+            loseLife();
+
+            continue;
+        }
+
+
+        /* ENEMY ESCAPES */
+
+        if (
+            !enemiesFrozen &&
+            enemy.y >
+            game.clientHeight + 90
+        ) {
+
+            enemy.element.remove();
+
+            enemies.splice(
+                i,
+                1
+            );
+
+            loseLife();
+        }
+    }
+
+
+    /* =====================
+       POWERUPS
+    ===================== */
+
+    for (
+        let i = powerups.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const powerup =
+            powerups[i];
+
+
+        powerup.y +=
+            powerup.speed * dt;
+
+
+        powerup.element.style.top =
+            powerup.y + "px";
+
+
+        const playerRect = {
+
+            x: playerX,
+
+            y:
+                game.clientHeight -
+                65 -
+                player.offsetHeight,
+
+            width:
+                player.offsetWidth,
+
+            height:
+                player.offsetHeight
+
+        };
+
+
+        const powerupRect = {
+
+            x: powerup.x,
+
+            y: powerup.y,
+
+            width:
+                powerup.type === "freeze"
+                    ? 58
+                    : 52,
+
+            height:
+                powerup.type === "freeze"
+                    ? 58
+                    : 52
+
+        };
+
+
+        if (
+            collision(
+                playerRect,
+                powerupRect
+            )
+        ) {
+
+            collectPowerup(
+                powerup
+            );
+
+
+            powerups.splice(
+                i,
+                1
+            );
+
+
+            continue;
+        }
+
+
+        if (
+            powerup.y >
+            game.clientHeight + 70
+        ) {
+
+            powerup.element.remove();
+
+            powerups.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+/* =========================
+   GAME LOOP
+========================= */
+
+function gameLoop(timestamp) {
+
+    if (!gameRunning) return;
+
+
+    const dt =
+        Math.min(
+            (timestamp -
+                lastTime) / 1000,
+
+            .033
+        );
+
+
+    lastTime =
+        timestamp;
+
+
+    update(dt);
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+document.addEventListener(
+    "keydown",
+    e => {
+
+        if (!gameRunning) return;
+
+
+        if (
+            e.code === "ArrowLeft" ||
+            e.code === "KeyA"
+        ) {
+
+            keys.left = true;
+
+            e.preventDefault();
+        }
+
+
+        if (
+            e.code === "ArrowRight" ||
+            e.code === "KeyD"
+        ) {
+
+            keys.right = true;
+
+            e.preventDefault();
+        }
+
+
+        if (e.code === "Space") {
+
+            e.preventDefault();
+
+            tryShoot();
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    e => {
+
+        if (
+            e.code === "ArrowLeft" ||
+            e.code === "KeyA"
+        ) {
+
+            keys.left = false;
+        }
+
+
+        if (
+            e.code === "ArrowRight" ||
+            e.code === "KeyD"
+        ) {
+
+            keys.right = false;
+        }
+
+
+        if (e.code === "Space") {
+
+            releaseFire();
+
+            e.preventDefault();
+        }
+
+    }
+);
+
+
+/* =========================
+   MOBILE MOVEMENT
+========================= */
+
+function holdButton(
+    button,
+    property
+) {
+
+    button.addEventListener(
+        "pointerdown",
+        e => {
+
+            e.preventDefault();
+
+            keys[property] = true;
+        }
+    );
+
+
+    button.addEventListener(
+        "pointerup",
+        e => {
+
+            e.preventDefault();
+
+            keys[property] = false;
+        }
+    );
+
+
+    button.addEventListener(
+        "pointercancel",
+        () => {
+
+            keys[property] = false;
+        }
+    );
+
+
+    button.addEventListener(
+        "pointerleave",
+        () => {
+
+            keys[property] = false;
+        }
+    );
+}
+
+
+holdButton(
+    leftButton,
+    "left"
+);
+
+
+holdButton(
+    rightButton,
+    "right"
+);
+
+
+/* =========================
+   MOBILE SHOOT
+========================= */
+
+shootButton.addEventListener(
+    "pointerdown",
+    e => {
+
+        e.preventDefault();
+
+        tryShoot();
+    }
+);
+
+
+shootButton.addEventListener(
+    "pointerup",
+    e => {
+
+        e.preventDefault();
+
+        releaseFire();
+    }
+);
+
+
+shootButton.addEventListener(
+    "pointercancel",
+    () => {
+
+        releaseFire();
+    }
+);
+
+
+shootButton.addEventListener(
+    "pointerleave",
+    () => {
+
+        releaseFire();
+    }
+);
+
+
+/* =========================
+   START / RESTART
+========================= */
+
+startButton.addEventListener(
+    "click",
+    startGame
+);
+
+
+restartButton.addEventListener(
+    "click",
+    startGame
+);
+
+
+/* =========================
+   INITIALIZE
+========================= */
+
+createStars();
+
+resetPlayer();
+
+</script>
+
+</body>
+</html>
