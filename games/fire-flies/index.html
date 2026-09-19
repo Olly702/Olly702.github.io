@@ -712,13 +712,6 @@ function spawn() {
 
   const x0 = rand(30, W - 30);
 
-  /*
-    ONLY fireflies are doubled.
-    Raindrops stay at their original speed.
-  */
-  const fireflyMultiplier =
-    type === 'drop' ? 1 : 2;
-
   state.items.push({
     type,
     x0,
@@ -729,9 +722,9 @@ function spawn() {
     freq: rand(1.2, 2.6),
     amp: type === 'drop' ? 0 : rand(8, 30),
 
+    /* Faster normal firefly movement */
     vy:
       speed *
-      fireflyMultiplier *
       (
         type === 'drop'
           ? 1.35
@@ -745,155 +738,8 @@ function spawn() {
         ? 11
         : type === 'drop'
           ? 9
-          : 7,
-
-    /*
-      New physical dragging state.
-      This does not change the appearance
-      or normal behavior of the firefly.
-    */
-    dragging: false,
-    dragOffsetX: 0,
-    dragOffsetY: 0
+          : 7
   });
-}
-
-/* ---------------- jar collision / dragging ---------------- */
-
-/*
-  Checks ONLY the physical sides and bottom
-  of the jar.
-
-  This is deliberately separate from the
-  opening collision so touching the glass
-  can NEVER count as a catch.
-*/
-function touchesJarBody(it) {
-  if (it.type === 'drop') return false;
-
-  const bodyTop =
-    jar.y - jar.h + 7;
-
-  const bodyBottom =
-    jar.y;
-
-  const bodyLeft =
-    jar.x - jar.w / 2;
-
-  const bodyRight =
-    jar.x + jar.w / 2;
-
-  const sideThickness = 10;
-  const bottomThickness = 10;
-
-  const verticalOverlap =
-    it.y + it.r > bodyTop &&
-    it.y - it.r < bodyBottom;
-
-  const horizontalOverlap =
-    it.x + it.r > bodyLeft &&
-    it.x - it.r < bodyRight;
-
-  const leftTouch =
-    verticalOverlap &&
-    it.x + it.r >= bodyLeft &&
-    it.x <= bodyLeft + sideThickness;
-
-  const rightTouch =
-    verticalOverlap &&
-    it.x - it.r <= bodyRight &&
-    it.x >= bodyRight - sideThickness;
-
-  const bottomTouch =
-    horizontalOverlap &&
-    it.y + it.r >= bodyBottom - bottomThickness &&
-    it.y - it.r <= bodyBottom + bottomThickness;
-
-  return (
-    leftTouch ||
-    rightTouch ||
-    bottomTouch
-  );
-}
-
-
-/*
-  ONLY the actual mouth/opening can catch.
-
-  The old game used a huge collision zone extending
-  52px below the mouth, which meant the sides and
-  bottom could effectively catch things.
-
-  This checks that the firefly crosses the mouth
-  from ABOVE.
-*/
-function reachesJarOpening(it) {
-  const mouthY =
-    jar.y - jar.h + 4;
-
-  const previousMouthY =
-    jar.prevY - jar.h + 4;
-
-  const mouthTop =
-    Math.min(
-      mouthY,
-      previousMouthY
-    );
-
-  const mouthBottom =
-    Math.max(
-      mouthY,
-      previousMouthY
-    );
-
-  /*
-    Opening is narrower than the entire jar body.
-  */
-  const mouthHalf =
-    jar.w * 0.37;
-
-  const xLo =
-    Math.min(
-      jar.x,
-      jar.prevX
-    ) - mouthHalf;
-
-  const xHi =
-    Math.max(
-      jar.x,
-      jar.prevX
-    ) + mouthHalf;
-
-  /*
-    The firefly must have been above
-    the opening and then cross it.
-  */
-  const wasAbove =
-    it.y - it.r <= mouthTop;
-
-  const reachedOpening =
-    it.y + it.r >= mouthTop;
-
-  /*
-    Prevent catching objects that have already
-    travelled down the glass/body.
-  */
-  const stillAtOpening =
-    it.y - it.r <=
-    mouthBottom + 5;
-
-  const insideOpening =
-    it.x >= xLo &&
-    it.x <= xHi;
-
-  return (
-    !it.dragging &&
-    wasAbove &&
-    reachedOpening &&
-    stillAtOpening &&
-    insideOpening &&
-    it.vy > 0
-  );
 }
 
 /* ---------------- update ---------------- */
@@ -1043,49 +889,48 @@ function update(dt) {
       rand(0.7, 1.3);
   }
 
+  const mouthY = jar.y - jar.h + 4;
+  const mouthPrevY = jar.prevY - jar.h + 4;
 
-  /*
-    -------------------------------
-    NEW FIRELY/JAR PHYSICS
-    -------------------------------
-  */
+  const zoneTop =
+    Math.min(mouthY, mouthPrevY);
+
+  const zoneBot =
+    Math.max(mouthY, mouthPrevY) + 52;
+
+  const xLo =
+    Math.min(jar.x, jar.prevX);
+
+  const xHi =
+    Math.max(jar.x, jar.prevX);
 
   for (let i = state.items.length - 1; i >= 0; i--) {
     const it = state.items[i];
 
     it.t += dt * ts;
 
-    /*
-      Firefly keeps falling naturally.
-    */
     it.y += it.vy * ts * dt;
 
+    it.x = clamp(
+      it.x0 +
+      Math.sin(
+        it.t * it.freq + it.phase
+      ) * it.amp,
+      14,
+      W - 14
+    );
 
-    /*
-      If the firefly is NOT currently being
-      dragged, calculate its normal horizontal
-      wandering exactly like the original game.
-    */
-    if (!it.dragging) {
-      it.x = clamp(
-        it.x0 +
-        Math.sin(
-          it.t * it.freq + it.phase
-        ) * it.amp,
-        14,
-        W - 14
-      );
-    }
+    const half =
+      jar.w / 2 -
+      6 +
+      it.r * 0.4;
 
-
-    /*
-      TOP OPENING CATCH
-      -----------------
-      Check this BEFORE body dragging.
-
-      If it enters through the mouth, catch it.
-    */
-    if (reachesJarOpening(it)) {
+    if (
+      it.y + it.r >= zoneTop &&
+      it.y <= zoneBot &&
+      it.x >= xLo - half &&
+      it.x <= xHi + half
+    ) {
       state.items.splice(i, 1);
 
       onCatch(it);
@@ -1095,101 +940,6 @@ function update(dt) {
       continue;
     }
 
-
-    /*
-      PHYSICAL SIDE/BOTTOM CONTACT
-      ----------------------------
-
-      If the firefly hits the glass sides
-      or bottom, attach it to the jar.
-
-      It is NOT caught.
-    */
-    const touchingBody =
-      touchesJarBody(it);
-
-
-    if (touchingBody) {
-
-      if (!it.dragging) {
-
-        /*
-          First frame of contact.
-
-          Remember where the firefly is relative
-          to the jar so it doesn't teleport.
-        */
-        it.dragging = true;
-
-        it.dragOffsetX =
-          it.x - jar.x;
-
-        it.dragOffsetY =
-          it.y - jar.y;
-      }
-
-
-      /*
-        Transfer the jar's movement directly
-        to the firefly.
-
-        This creates the actual dragging effect.
-      */
-      it.x +=
-        jar.x - jar.prevX;
-
-      it.y +=
-        jar.y - jar.prevY;
-
-
-      /*
-        Keep the firefly inside the screen.
-        This only prevents impossible clipping
-        at the extreme edges.
-      */
-      it.x = clamp(
-        it.x,
-        -30,
-        W + 30
-      );
-
-    } else if (it.dragging) {
-
-      /*
-        The jar has moved away.
-
-        Release the firefly.
-      */
-      it.dragging = false;
-
-
-      /*
-        Rebuild x0 so the firefly's original
-        sinusoidal movement continues smoothly
-        from its NEW position instead of snapping
-        back to where it originally was.
-      */
-      const wave =
-        Math.sin(
-          it.t * it.freq +
-          it.phase
-        ) * it.amp;
-
-      it.x0 =
-        it.x - wave;
-    }
-
-
-    /*
-      MISS DETECTION
-      --------------
-
-      The firefly only gets missed if it
-      actually reaches the bottom of the game.
-
-      Being dragged along the jar does NOT
-      automatically remove it.
-    */
     if (it.y - it.r > MISS_Y) {
       state.items.splice(i, 1);
 
@@ -1796,7 +1546,8 @@ function draw() {
 
   for (const p of state.parts) {
     const a =
-      1 - p.life / p.max;
+      1 -
+      p.life / p.max;
 
     ctx.fillStyle =
       `rgba(${p.rgb},${a})`;
