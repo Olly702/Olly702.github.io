@@ -402,8 +402,6 @@ body {
     transition: filter .2s;
 }
 
-/* Frozen enemies become blue */
-
 .enemy.frozenEnemy {
     filter:
         drop-shadow(0 0 16px rgba(60, 220, 255, .9))
@@ -969,8 +967,6 @@ body {
         </div>
 
     </div>
-
-    <!-- FREEZE TIMER -->
 
     <div id="freezeTimer">
         ❄ FREEZE
@@ -1567,10 +1563,6 @@ function spawnEnemy() {
 
         y: y,
 
-        /*
-            SLOWER ENEMIES
-        */
-
         speed:
             55 +
             Math.random() * 65
@@ -1593,10 +1585,6 @@ function spawnPowerup() {
 
     let type;
 
-
-    /*
-        TNT remains rare.
-    */
 
     if (roll < .07) {
 
@@ -1873,11 +1861,6 @@ function collectPowerup(powerup) {
 
 function activateFreeze() {
 
-    /*
-        Reset an existing freeze
-        if another one is collected.
-    */
-
     clearInterval(
         freezeInterval
     );
@@ -1895,10 +1878,6 @@ function activateFreeze() {
         freezeCountdown;
 
 
-    /*
-        Visually freeze every enemy.
-    */
-
     enemies.forEach(enemy => {
 
         enemy.element.classList.add(
@@ -1907,11 +1886,6 @@ function activateFreeze() {
 
     });
 
-
-    /*
-        Countdown:
-        5 → 4 → 3 → 2 → 1 → 0
-    */
 
     freezeInterval =
         setInterval(() => {
@@ -1930,10 +1904,6 @@ function activateFreeze() {
 
                 enemiesFrozen = false;
 
-
-                /*
-                    Unfreeze every enemy.
-                */
 
                 enemies.forEach(
                     enemy => {
@@ -2132,10 +2102,6 @@ function loseLife() {
     if (invincible) return;
 
 
-    /*
-        SHIELD ABSORBS HIT
-    */
-
     if (shieldActive) {
 
         shieldActive = false;
@@ -2276,11 +2242,6 @@ function update(dt) {
 
         powerupTimer = 0;
 
-        /*
-            20% chance for a FREEZE
-            instead of a normal powerup.
-        */
-
         if (Math.random() < .20) {
 
             spawnFreeze();
@@ -2339,6 +2300,10 @@ function update(dt) {
 
         let destroyed = false;
 
+
+        /* =====================
+           ENEMY COLLISION
+        ===================== */
 
         for (
             let j = enemies.length - 1;
@@ -2414,6 +2379,83 @@ function update(dt) {
 
 
         if (destroyed) continue;
+
+
+        /* =========================
+           POWERUP COLLISION
+           SHOOTING POWERUPS
+        ========================= */
+
+        for (
+            let j = powerups.length - 1;
+            j >= 0;
+            j--
+        ) {
+
+            const powerup =
+                powerups[j];
+
+
+            const powerupSize =
+                powerup.type === "freeze"
+                    ? 58
+                    : 52;
+
+
+            const powerupRect = {
+
+                x: powerup.x,
+
+                y: powerup.y,
+
+                width: powerupSize,
+
+                height: powerupSize
+
+            };
+
+
+            if (
+                collision(
+                    laserRect,
+                    powerupRect
+                )
+            ) {
+
+                /*
+                    The laser activates
+                    the powerup exactly
+                    like touching it.
+                */
+
+                collectPowerup(
+                    powerup
+                );
+
+
+                powerups.splice(
+                    j,
+                    1
+                );
+
+
+                laser.element.remove();
+
+
+                lasers.splice(
+                    i,
+                    1
+                );
+
+
+                destroyed = true;
+
+                break;
+            }
+        }
+
+
+        if (destroyed) continue;
     }
 
 
@@ -2430,12 +2472,6 @@ function update(dt) {
         const enemy =
             enemies[i];
 
-
-        /*
-            FREEZE:
-            Enemy position does not
-            change while frozen.
-        */
 
         if (!enemiesFrozen) {
 
@@ -2478,8 +2514,6 @@ function update(dt) {
         };
 
 
-        /* HIT PLAYER */
-
         if (
             !invincible &&
             collision(
@@ -2508,8 +2542,6 @@ function update(dt) {
             continue;
         }
 
-
-        /* ENEMY ESCAPES */
 
         if (
             !enemiesFrozen &&
